@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
             "Ayo fr?? You're not lying right? 😂",
             "Even White Coat Man approves! (maybe) 😾",
             "bbg energy confirmed! ✌️",
-            "Hatt?? For real for real? 🥀"
+            "Hatt! For real? 😭❤️"
         ];
         responseText.textContent = responses[Math.floor(Math.random() * responses.length)];
     }
@@ -112,12 +112,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Different responses based on click count
         const sadResponses = [
-            "Hatt?? Think again 😾",
+            "Hatt! Think again 😾",
             "You can't do this to me 😔",
-            "Hurr?? But why?? 😭",
-            "Blehh... that's harsh hazzyyy 🥀",
+            "Hurr! But why?? 😭",
+            "Blehh... that's harsh hazyyy 🥀",
             "Cyaa... you're breaking my heart 💔",
-            "Gay?? Proud gay?? 🤣 Just kidding... but srsly 😾"
+            "We r proud gay na? 🤣 Just kidding... but srsly 😾"
         ];
         
         const randomResponse = sadResponses[Math.floor(Math.random() * sadResponses.length)];
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Occasionally change button text
             if (Math.random() > 0.7) {
-                const noTexts = ["❌ NO", "😾 NO", "🥀 NO", "😭 NO", "😂 NO"];
+                const noTexts = ["❌ NO", "😾 NO", "🥀 NO", "😭 NO", "💔 NO"];
                 noBtn.textContent = noTexts[Math.floor(Math.random() * noTexts.length)];
             }
         }, 600); // Move every 600ms
@@ -288,11 +288,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show funny message based on rating
             const messages = [
-                "Only {count}? Hatt?? 😾",
-                "{count} stars? Blehh... 🥀",
-                "{count}? Cyaa... you're harsh hazzyyy 😭",
+                "Only {count}? Hatt! 😡",
+                "{count} stars? Blehh... 😾",
+                "{count}? Cyaa... you're harsh hazyyy 🥀",
                 "{count} stars? I'll take it! 😼",
-                "All {count}! Yesss! bbg energy! ✌️"
+                "All {count}! Yeshh! My bbg energy! ✌️"
             ];
             
             const selectedMessage = messages[index];
@@ -316,9 +316,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (questionScreen.classList.contains('active')) {
             const teasers = [
                 "White Coat Man is watching... 👀",
-                "Remember... gay proud gay 🤣",
-                "bbg is waiting... 😼",
-                "No pressure hazzyyy... 👀",
+                "Remember... we r proud gay 🤣",
+                "Bailchara on top ✌️",
+                "No pressure hazyyy... 🎀",
                 "Just choose... it's not that deep 😂"
             ];
             
