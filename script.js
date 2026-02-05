@@ -81,10 +81,11 @@ document.addEventListener('DOMContentLoaded', function() {
         createConfetti();
 
         // Show stickers only on first YES click
-if (!hasShownStickers) {
-    createStickers();
-    hasShownStickers = true;
-}
+        if (!hasShownStickers) {
+            createStickers();
+            hasShownStickers = true;
+        }
+        
         // Show celebration screen after a short delay
         setTimeout(() => {
             questionScreen.classList.remove('active');
@@ -336,211 +337,169 @@ if (!hasShownStickers) {
         lastInteraction = Date.now();
     });
 
-// Create sticker pop-up animation
-function createStickers() {
-    const stickersContainer = document.querySelector('.stickers-container');
-    const stickerPaths = [
-        'stickers/sticker1.png',
-        'stickers/sticker2.png',
-        'stickers/sticker3.png',
-        'stickers/sticker4.png'
-    ];
-    
-    stickerPaths.forEach((path, index) => {
-        const sticker = document.createElement('div');
-        sticker.classList.add('sticker');
+    // Create sticker pop-up animation
+    function createStickers() {
+        const stickersContainer = document.querySelector('.stickers-container');
+        const stickerPaths = [
+            'stickers/sticker1.png',
+            'stickers/sticker2.png',
+            'stickers/sticker3.png',
+            'stickers/sticker4.png'
+        ];
         
-        const img = document.createElement('img');
-        img.src = path;
-        img.alt = `Sticker ${index + 1}`;
-        
-        sticker.appendChild(img);
-        
-        // Alternate sides: left (even index) or right (odd index)
-        const isLeft = index % 2 === 0;
-        
-        if (isLeft) {
-    sticker.style.left = '10%';
-    sticker.style.animation = `stickerPopFromLeft 5s ease-out forwards`;  // ← Changed
-} else {
-    sticker.style.right = '10%';
-    sticker.style.animation = `stickerPopFromRight 5s ease-out forwards`;  // ← Changed
-}
-        
-        // Vertical position with slight randomness
-        const baseBottom = 20 + (index * 15);
-        sticker.style.bottom = `${baseBottom}%`;
-        
-        // Stagger the animation start times
-        sticker.style.animationDelay = `${index * 0.2}s`;
-        
-        stickersContainer.appendChild(sticker);
-        
-        // Remove sticker after animation completes
-        setTimeout(() => {
-    if (sticker && sticker.parentNode) {
-        sticker.remove();
+        stickerPaths.forEach((path, index) => {
+            const sticker = document.createElement('div');
+            sticker.classList.add('sticker');
+            
+            const img = document.createElement('img');
+            img.src = path;
+            img.alt = `Sticker ${index + 1}`;
+            
+            sticker.appendChild(img);
+            
+            // Alternate sides: left (even index) or right (odd index)
+            const isLeft = index % 2 === 0;
+            
+            if (isLeft) {
+                sticker.style.left = '10%';
+                sticker.style.animation = `stickerPopFromLeft 5s ease-out forwards`;
+            } else {
+                sticker.style.right = '10%';
+                sticker.style.animation = `stickerPopFromRight 5s ease-out forwards`;
+            }
+            
+            // Vertical position with slight randomness
+            const baseBottom = 20 + (index * 15);
+            sticker.style.bottom = `${baseBottom}%`;
+            
+            // Stagger the animation start times
+            sticker.style.animationDelay = `${index * 0.2}s`;
+            
+            stickersContainer.appendChild(sticker);
+            
+            // Remove sticker after animation completes
+            setTimeout(() => {
+                if (sticker && sticker.parentNode) {
+                    sticker.remove();
+                }
+            }, 5000 + (index * 200));
+        });
     }
-}, 5000 + (index * 200));  // ← Changed to 5000
-    });
-}
-// ====== FIXED SECRET MODE ======
-let isSecretModeActive = false;
-let typingAnimation = null;
-let lastShakeTime = 0;
-let petalInterval = null;
 
-const secretScreen = document.getElementById('secret-screen');
-const okayBtn = document.getElementById('okay-btn');
-const typedText = document.getElementById('typed-text');
-
-if (secretScreen && okayBtn && typedText) {
+    // ============ SECRET MODE FIXED ============
+    const secretScreen = document.getElementById('secret-screen');
+    const okayBtn = document.getElementById('okay-btn');
+    const typedText = document.getElementById('typed-text');
     
-    const secretMessage = `Alright Noor, secret mode unlocked 😼
+    if (secretScreen && okayBtn && typedText) {
+        let isSecretModeActive = false;
+        let typingTimeout = null;
+        let lastShakeTime = 0;
+        
+        const secretMessage = `Alright Noor, secret mode unlocked 😼
 
 I joke a lot, but genuinely, you're someone who makes things feel easy. Talking to you never feels forced, and that's kinda rare these days.
 
 This site, the jokes, the chaos, all just a dumb little way of saying "Yeah, you matter as a friend" ❤️
 
 Okay done before this gets awkward 😂✌️`;
-
-    // Type the message
-    function typeMessage() {
-        // Clear any existing typing
-        if (typingAnimation) {
-            clearTimeout(typingAnimation);
-            typingAnimation = null;
+        
+        // Type message with typing animation
+        function typeMessage() {
+            // Clear any existing typing
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+                typingTimeout = null;
+            }
+            
+            typedText.innerHTML = '';
+            let charIndex = 0;
+            
+            function typeNextChar() {
+                if (charIndex < secretMessage.length) {
+                    // Handle newlines
+                    if (secretMessage[charIndex] === '\n') {
+                        typedText.innerHTML += '<br>';
+                    } else {
+                        typedText.innerHTML += secretMessage[charIndex];
+                    }
+                    
+                    charIndex++;
+                    
+                    // Scroll to keep text visible
+                    typedText.scrollTop = typedText.scrollHeight;
+                    
+                    // Random typing speed for natural feel
+                    const speed = 30 + Math.random() * 20;
+                    typingTimeout = setTimeout(typeNextChar, speed);
+                }
+            }
+            
+            typeNextChar();
         }
         
-        typedText.innerHTML = '';
-        let i = 0;
+        // OK button event
+        okayBtn.addEventListener('click', function() {
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+            
+            secretScreen.classList.remove('active');
+            document.getElementById('intro-screen').classList.add('active');
+            isSecretModeActive = false;
+        });
         
-        function typeChar() {
-            if (i < secretMessage.length) {
-                if (secretMessage[i] === '\n') {
-                    typedText.innerHTML += '<br>';
-                } else {
-                    typedText.innerHTML += secretMessage[i];
-                }
-                i++;
-                typedText.scrollTop = typedText.scrollHeight;
-                typingAnimation = setTimeout(typeChar, 30);
+        // Shake detection
+        function handleShake(event) {
+            if (isSecretModeActive) return;
+            
+            const acceleration = event.accelerationIncludingGravity;
+            if (!acceleration) return;
+            
+            // Calculate movement
+            const movement = Math.abs(acceleration.x || 0) + 
+                           Math.abs(acceleration.y || 0) + 
+                           Math.abs(acceleration.z || 0);
+            
+            const now = Date.now();
+            
+            // Check for shake
+            if (movement > 25 && (now - lastShakeTime) > 3000) {
+                lastShakeTime = now;
+                activateSecretMode();
             }
         }
         
-        typeChar();
-    }
-
-    // Create floating petals
-    function createPetals() {
-        const petalCount = 15;
-        
-        // Clear existing petals
-        const existingPetals = document.querySelectorAll('.petal');
-        existingPetals.forEach(petal => petal.remove());
-        
-        for (let i = 0; i < petalCount; i++) {
-            setTimeout(() => {
-                const petal = document.createElement('div');
-                petal.classList.add('petal');
-                
-                // Random properties
-                petal.style.left = `${Math.random() * 100}%`;
-                petal.style.animationDelay = `${Math.random() * 5}s`;
-                petal.style.animationDuration = `${10 + Math.random() * 10}s`;
-                
-                // Random color (pink shades)
-                const hue = 330 + Math.random() * 20;
-                petal.style.background = `hsla(${hue}, 80%, 70%, 0.7)`;
-                
-                // Random size
-                const size = 10 + Math.random() * 15;
-                petal.style.width = `${size}px`;
-                petal.style.height = `${size}px`;
-                
-                secretScreen.appendChild(petal);
-            }, i * 200);
-        }
-    }
-
-    // OK button - go back to intro
-    okayBtn.addEventListener('click', function() {
-        isSecretModeActive = false;
-        
-        // Clear animations
-        if (typingAnimation) {
-            clearTimeout(typingAnimation);
+        // Activate secret mode
+        function activateSecretMode() {
+            if (isSecretModeActive) return;
+            
+            isSecretModeActive = true;
+            
+            // Hide current screen
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen) {
+                activeScreen.classList.remove('active');
+            }
+            
+            // Show secret screen
+            secretScreen.classList.add('active');
+            
+            // Start typing animation
+            setTimeout(typeMessage, 500);
         }
         
-        // Remove petals
-        const petals = document.querySelectorAll('.petal');
-        petals.forEach(petal => petal.remove());
-        
-        // Hide secret screen
-        secretScreen.classList.remove('active');
-        
-        // Return to intro screen
-        document.getElementById('intro-screen').classList.add('active');
-    });
-
-    // Shake detection
-    function handleShake(event) {
-        if (isSecretModeActive) return;
-        
-        const acceleration = event.accelerationIncludingGravity;
-        if (!acceleration) return;
-        
-        // Calculate shake force
-        const x = acceleration.x || 0;
-        const y = acceleration.y || 0;
-        const z = acceleration.z || 0;
-        
-        const force = Math.sqrt(x*x + y*y + z*z);
-        const currentTime = Date.now();
-        
-        // More strict shake detection
-        if (force > 25 && (currentTime - lastShakeTime) > 3000) {
-            lastShakeTime = currentTime;
-            activateSecretMode();
-        }
-    }
-
-    // Activate secret mode
-    function activateSecretMode() {
-        if (isSecretModeActive) return;
-        
-        isSecretModeActive = true;
-        
-        // Get current active screen
-        const activeScreen = document.querySelector('.screen.active');
-        if (activeScreen) {
-            activeScreen.classList.remove('active');
+        // Add shake listener
+        if (window.DeviceMotionEvent) {
+            window.addEventListener('devicemotion', handleShake);
         }
         
-        // Show secret screen
-        secretScreen.classList.add('active');
-        
-        // Create petals
-        createPetals();
-        
-        // Start typing after a delay
-        setTimeout(() => {
-            typeMessage();
-        }, 500);
+        // Desktop testing - press 'S' key
+        document.addEventListener('keydown', function(e) {
+            if ((e.key === 's' || e.key === 'S') && !isSecretModeActive) {
+                e.preventDefault();
+                activateSecretMode();
+            }
+        });
     }
-
-    // Add shake event listener
-    if (window.DeviceMotionEvent) {
-        window.addEventListener('devicemotion', handleShake);
-    }
-
-    // For testing on desktop (press 'S')
-    document.addEventListener('keydown', function(e) {
-        if ((e.key === 's' || e.key === 'S') && !isSecretModeActive) {
-            e.preventDefault();
-            activateSecretMode();
-        }
-    });
-}
-// ====== END SECRET MODE ======
 });
