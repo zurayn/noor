@@ -94,6 +94,40 @@ document.addEventListener('DOMContentLoaded', function() {
             // Scroll to top of yes screen
             yesScreen.scrollIntoView({ behavior: 'smooth' });
         }, 800);
+
+        // Show secret hint after YES click
+setTimeout(() => {
+    const secretHint = document.getElementById('secret-hint-container');
+    if (secretHint) {
+        // Show the hint immediately
+        secretHint.classList.add('show');
+        
+        // Check if device is mobile or desktop
+        function isMobileDevice() {
+            return (('ontouchstart' in window) ||
+                   (navigator.maxTouchPoints > 0) ||
+                   (navigator.msMaxTouchPoints > 0));
+        }
+        
+        const hintDesc = secretHint.querySelector('.secret-hint-desc');
+        const hintSub = secretHint.querySelector('.secret-hint-sub');
+        
+        if (isMobileDevice()) {
+            // Mobile device
+            if (hintDesc) {
+                hintDesc.textContent = "Try shaking your phone for a secret message from Zurayn...";
+            }
+        } else {
+            // Desktop
+            if (hintDesc) {
+                hintDesc.innerHTML = "Press the <strong>'S' key</strong> for a secret message from Zurayn...";
+            }
+            if (hintSub) {
+                hintSub.textContent = "(Or just pretend to shake your laptop 😂)";
+            }
+        }
+    }
+}, 1500); // Show hint 1.5 seconds after YES screen appears
         
         // Update response text before transition
         const responses = [
@@ -266,7 +300,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function restartExperience() {
         yesScreen.classList.remove('active');
         introScreen.classList.add('active');
-        
+        // Hide secret hint
+    const secretHint = document.getElementById('secret-hint-container');
+    if (secretHint) {
+        secretHint.classList.remove('show');
+    }
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
