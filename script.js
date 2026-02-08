@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let noClickCount = 0;
     let isNoButtonMoving = false;
     let noButtonMoveInterval;
-    let hasShownStickers = false;
     
     // Initialize the page
     initPage();
@@ -80,11 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create confetti
         createConfetti();
 
-        // Show stickers only on first YES click
-        if (!hasShownStickers) {
-            createStickers();
-            hasShownStickers = true;
-        }
+         // Show stickers every time YES is clicked
+        createStickers(); // REMOVED: if (!hasShownStickers) condition
         
         // Show celebration screen after a short delay
         setTimeout(() => {
@@ -305,6 +301,11 @@ setTimeout(() => {
     if (secretHint) {
         secretHint.classList.remove('show');
     }
+        // Clear any remaining stickers
+        const stickersContainer = document.querySelector('.stickers-container');
+        if (stickersContainer) {
+            stickersContainer.innerHTML = '';
+        }
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
