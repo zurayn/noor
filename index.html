@@ -146,61 +146,96 @@
         
         <!-- YES Response Screen -->
         
-        <section id="yes-screen" class="screen">
-            <div class="celebration">
-                <h2 class="celebration-title">Ayo fr?? 😭❤️</h2>
-                <div class="heart-burst"></div>
-                
-                <div class="message-container">
-                    <div class="message bubble">bbg energy detected ✌️😼</div>
-                    <div class="message bubble">Even White Coat Man couldn't stop you from saying that 😂🔥</div>
-                    <div class="message bubble">Wait... you're not just saying that 👉👈 right?</div>
-                    <div class="message bubble">Just kidding noob 😼 I know you like me</div>
-                    <div class="message bubble">But like... be honest 😼, how hawt 🔥 am I compared to White Coat Man? </div>
-                    <div class="message bubble">Okay okay... I'll stop being jealous 😔...maybe 😼</div>
-                </div>
-                
-                <div class="friend-zone-reveal">
-                    <h3 class="friend-zone-title">JK JK relax bbg 😂</h3>
-                    <p class="friend-zone-text">We're just friends lol 🥀</p>
-                    <p class="friend-zone-subtext">But admit it... this site was kinda kool right? 😼</p>
-                    
-                    <div class="final-message">
-                        <h4>Now rate my coding skills ❤️ ✌️ (Be honest noob 😼)</h4>
-                        <div class="rating">
-                            <span class="star">⭐</span>
-                            <span class="star">⭐</span>
-                            <span class="star">⭐</span>
-                            <span class="star">⭐</span>
-                            <span class="star">⭐</span>
-                        </div>
-                        <p class="rating-note">(Pick all 5 if you're "Proud Gay 🤣")</p>
-                    </div>
-                    <!-- ====== HINT FOR SECRET MODE ====== -->
-                        <div class="secret-discovery-hint" id="secret-hint-container">
-        <div class="secret-hint-content">
-            <div class="secret-hint-icon">
-                <span class="phone-icon">📱</span>
-                <div class="shake-animation">
-                    <span class="shake-dot"></span>
-                    <span class="shake-dot"></span>
-                    <span class="shake-dot"></span>
+        <!-- YES Response Screen - Updated to Chat Story -->
+<section id="yes-screen" class="screen">
+    <!-- Chat Container -->
+    <div class="chat-story-container">
+        <!-- Instagram-like Header -->
+        <div class="chat-header">
+            <div class="back-btn" id="back-to-question">←</div>
+            <div class="profile-info">
+                <img src="stickers/pfp.jpg" alt="Zurayn" class="profile-pic" onerror="this.onerror=null; this.src='https://i.pravatar.cc/150?img=8';">
+                <div class="profile-details">
+                    <h3>Zurayn</h3>
+                    <p class="online-status">online • typing...</p>
                 </div>
             </div>
-            <div class="secret-hint-text">
-                <p class="secret-hint-title">Pssst... there's more! 👀</p>
-                <p class="secret-hint-desc">Try shaking your phone for a secret message from Zurayn...</p>
-                <p class="secret-hint-sub">(It's kinda sweet, no cap 😊)</p>
+            <div class="header-actions">💬</div>
+        </div>
+        
+        <!-- Chat Display Area -->
+        <div class="chat-display" id="chat-display">
+            <!-- Messages will be dynamically added here -->
+            
+            <!-- Welcome/Context Message -->
+            <div class="message-bubble system-message">
+                <div class="message-content">
+                    <p class="context-text">Ayo fr? You actually clicked YES? 😭❤️</p>
+                    <span class="message-time">now</span>
+                </div>
             </div>
         </div>
+        
+        <!-- Options Area (Appears after messages) -->
+        <div class="options-container" id="options-container">
+            <!-- Options will be dynamically added here -->
+        </div>
+        
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typing-indicator">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <p>Zurayn is typing...</p>
+        </div>
     </div>
-                    
-                    <button id="restart-btn" class="btn">
-                        Wanna do it again? 😼
-                    </button>
+    
+    <!-- Rating System (Hidden Initially) -->
+    <div class="rating-overlay" id="rating-overlay" style="display: none;">
+        <div class="rating-content">
+            <h3 class="friend-zone-title">JK JK relax bbg 😂</h3>
+            <p class="friend-zone-text">We're just friends lol 🥀</p>
+            <p class="friend-zone-subtext">But admit it... this site was kinda kool right? 😼</p>
+            
+            <div class="final-message">
+                <h4>Now rate my coding skills ❤️ ✌️ (Be honest noob 😼)</h4>
+                <div class="rating">
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                </div>
+                <p class="rating-note">(Pick all 5 if you're "Proud Gay 🤣")</p>
+            </div>
+            
+            <!-- Secret Hint Section -->
+            <div class="secret-discovery-hint" id="secret-hint-container">
+                <div class="secret-hint-content">
+                    <div class="secret-hint-icon">
+                        <span class="phone-icon">📱</span>
+                        <div class="shake-animation">
+                            <span class="shake-dot"></span>
+                            <span class="shake-dot"></span>
+                            <span class="shake-dot"></span>
+                        </div>
+                    </div>
+                    <div class="secret-hint-text">
+                        <p class="secret-hint-title">Pssst... there's more! 👀</p>
+                        <p class="secret-hint-desc">Try shaking your phone for a secret message from Zurayn...</p>
+                        <p class="secret-hint-sub">(It's kinda sweet, no cap 😊)</p>
+                    </div>
                 </div>
             </div>
-        </section>
+            
+            <button id="restart-btn" class="btn">
+                Wanna do it again? 😼
+            </button>
+        </div>
+    </div>
+</section>
         
         <!-- Footer with inside jokes -->
         <footer class="footer">
