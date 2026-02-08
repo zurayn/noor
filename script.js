@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle YES button click
          // ============ INTERACTIVE CHAT STORY SYSTEM ============
     function handleYesClick() {
+        console.log("YES button clicked!");
     // Store the current noClickCount from main game
     originalNoClickCount = noClickCount;
     
