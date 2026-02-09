@@ -205,7 +205,7 @@ const chatStory = {
         }
     ]
 }
-        };
+        });
     
     // Initialize page with background hearts and intro screen
     function initPage() {
