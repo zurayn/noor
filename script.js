@@ -1315,19 +1315,17 @@ if (secretHintContainer) {
                     hintSub.innerHTML = "(Or just pretend to shake your laptop 😂)";
                 }
             }
+
+            if (!isMobileDevice()) {
+                const desktopHint = document.createElement('div');
+                desktopHint.className = 'desktop-hint';
+                desktopHint.innerHTML = `<div style="margin-top: 10px; font-size: 0.85rem; color: #888;"><i class="fas fa-keyboard"></i> Desktop tip: Press 'S' key anytime</div>`;
+                const hintTextEl = secretHintContainer.querySelector('.secret-hint-text');
+                if (hintTextEl) {
+                    hintTextEl.appendChild(desktopHint);
+                }
+            }
         }, 1000);
     });
-    
-    // Also add a desktop-specific hint that appears only on non-mobile
-    if (!isMobileDevice()) {
-        const desktopHint = document.createElement('div');
-        desktopHint.className = 'desktop-hint';
-        desktopHint.innerHTML = `
-            <div style="margin-top: 10px; font-size: 0.85rem; color: #888;">
-                <i class="fas fa-keyboard"></i> Desktop tip: Press 'S' key anytime
-            </div>
-        `;
-        secretHintContainer.querySelector('.secret-hint-text').appendChild(desktopHint);
-        desktopHint.style.display = 'block';
-    }
+}
 });
