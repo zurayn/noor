@@ -1253,18 +1253,17 @@ Okay, stopping here before this gets awkward. 😂✌️`;
                     typedText.innerHTML += charHtml;
                     charIndex++;
                     
-                    // Auto-scroll both the text container AND the secret screen
-                    // Scroll the text element
+                    // Auto-scroll the text container
                     typedText.scrollTo({
                         top: typedText.scrollHeight,
                         behavior: 'smooth'
                     });
                     
-                    // Also scroll the secret screen container
-                    const secretScreen = document.getElementById('secret-screen');
-                    if (secretScreen) {
-                        secretScreen.scrollTo({
-                            top: secretScreen.scrollHeight,
+                    // Also scroll the secret container (not the whole screen!)
+                    const secretContainer = document.querySelector('.secret-container');
+                    if (secretContainer) {
+                        secretContainer.scrollTo({
+                            top: secretContainer.scrollHeight,
                             behavior: 'smooth'
                         });
                     }
@@ -1302,10 +1301,10 @@ Okay, stopping here before this gets awkward. 😂✌️`;
                     
                     // Final scroll to show completion
                     setTimeout(() => {
-                        const secretScreen = document.getElementById('secret-screen');
-                        if (secretScreen) {
-                            secretScreen.scrollTo({
-                                top: secretScreen.scrollHeight,
+                        const secretContainer = document.querySelector('.secret-container');
+                        if (secretContainer) {
+                            secretContainer.scrollTo({
+                                top: secretContainer.scrollHeight,
                                 behavior: 'smooth'
                             });
                         }

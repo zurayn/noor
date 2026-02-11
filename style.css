@@ -122,13 +122,15 @@ body {
 .intro-title {
     font-family: 'Pacifico', cursive;
     font-size: 3.5rem;
-    background: linear-gradient(135deg, #FF9AA2, #FFB6C1, #E6E6FA);
+    background: linear-gradient(135deg, #FF1493, #FF69B4, #FF1493);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 20px;
-    text-shadow: 0 4px 12px rgba(255, 182, 193, 0.3);
+    text-shadow: none;
     animation: titleFloat 3s ease-in-out infinite;
+    font-weight: 700;
+    filter: brightness(1.2) contrast(1.3);
 }
 
 @keyframes titleFloat {
@@ -139,16 +141,16 @@ body {
 .intro-text {
     font-size: 1.3rem;
     margin-bottom: 12px;
-    color: var(--text-dark);
-    font-weight: 500;
+    color: #4A4A4A;
+    font-weight: 600;
 }
 
 .intro-subtext {
     font-size: 1rem;
-    color: var(--text-medium);
+    color: #7A7A7A;
     margin-bottom: 40px;
     font-style: italic;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
 /* Emoji float */
@@ -259,16 +261,6 @@ body {
     overflow: hidden;
     border: 2px solid rgba(255, 182, 193, 0.2);
 }
-
-.question-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 5px;
-    background: linear-gradient(90deg, #FFB6C1, #E6E6FA, #B5EAD7);
-}
     position: relative;
     overflow: hidden;
 }
@@ -299,10 +291,7 @@ body {
 
 .main-question {
     font-size: 2rem;
-    background: linear-gradient(135deg, #FF9AA2, #FFB6C1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #FF1493;
     margin-bottom: 15px;
     font-weight: 700;
 }
@@ -605,10 +594,31 @@ body {
 
 .secret-container {
     width: 90%;
-    max-width: 500px;
+    max-width: 650px;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     text-align: center;
-    padding: 20px;
+    padding: 30px 20px;
     z-index: 2;
+}
+
+.secret-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.secret-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.secret-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 10px;
+}
+
+.secret-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2, #f093fb);
 }
 
 .secret-title {
@@ -801,13 +811,14 @@ body {
 }
 
 .secret-hint-content {
-    background: rgba(42, 77, 110, 0.6);
-    border-radius: 20px;
-    padding: 20px;
-    border: 1px solid rgba(0, 132, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 209, 220, 0.95), rgba(230, 230, 250, 0.95));
+    border-radius: 25px;
+    padding: 25px;
+    border: 2px solid rgba(255, 182, 193, 0.4);
     backdrop-filter: blur(10px);
     position: relative;
     overflow: hidden;
+    box-shadow: 0 8px 20px rgba(255, 182, 193, 0.3);
 }
 
 .secret-hint-content::before {
@@ -816,8 +827,8 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #0084ff, transparent);
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #FFB6C1, #E6E6FA, transparent);
 }
 
 .secret-hint-icon {
@@ -845,7 +856,7 @@ body {
     display: block;
     width: 5px;
     height: 5px;
-    background-color: #0084ff;
+    background-color: #FFB6C1;
     border-radius: 50%;
     margin: 3px 0;
     animation: dotPulse 2s infinite;
@@ -861,32 +872,28 @@ body {
     75% { transform: rotate(5deg) translateY(3px); }
 }
 
-@keyframes dotPulse {
-    0%, 100% { opacity: 0.3; transform: translateX(0); }
-    50% { opacity: 1; transform: translateX(-5px); }
-}
-
 .secret-hint-text {
     text-align: center;
 }
 
 .secret-hint-title {
-    font-family: 'Dancing Script', cursive;
-    font-size: 1.6rem;
-    color: #0095ff;
-    margin-bottom: 8px;
+    font-family: 'Pacifico', cursive;
+    font-size: 1.5rem;
+    color: #FF69B4;
+    margin-bottom: 10px;
 }
 
 .secret-hint-desc {
     font-size: 0.95rem;
-    color: #e4e6eb;
-    margin-bottom: 5px;
-    line-height: 1.4;
+    color: #4A4A4A;
+    margin-bottom: 8px;
+    line-height: 1.5;
+    font-weight: 500;
 }
 
 .secret-hint-sub {
     font-size: 0.85rem;
-    color: #b0b3b8;
+    color: #7A7A7A;
     font-style: italic;
 }
 
@@ -938,8 +945,7 @@ body {
     background-size: 400% 400%;
     animation: auroraFlow 20s ease infinite;
     z-index: 9999;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 @keyframes auroraFlow {
@@ -1532,7 +1538,7 @@ body {
     max-width: 450px;
     height: 85vh;
     background: linear-gradient(135deg, #FFF8DC 0%, #FFD1DC 50%, #E6E6FA 100%);
-    border-radius: 25px;
+    border-radius: 35px;
     overflow: hidden;
     box-shadow: 0 15px 50px rgba(255, 182, 193, 0.4);
     display: flex;
@@ -1962,10 +1968,7 @@ body {
 
 .friend-zone-title {
     font-size: 2rem;
-    background: linear-gradient(135deg, #FF9AA2, #FFB6C1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #FF69B4;
     margin-bottom: 15px;
     font-weight: 700;
 }
