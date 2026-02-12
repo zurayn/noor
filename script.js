@@ -20,6 +20,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let noClickCount = 0;
     let isNoButtonMoving = false;
     let noButtonMoveInterval;
+    
+    // Smooth screen transition helper
+    function smoothTransition(fromScreen, toScreen, callback) {
+        if (fromScreen && fromScreen.classList.contains('active')) {
+            fromScreen.classList.add('fade-out');
+            setTimeout(() => {
+                fromScreen.classList.remove('active', 'fade-out');
+                toScreen.classList.add('active');
+                if (callback) callback();
+            }, 400); // Match fade-out animation duration
+        } else {
+            toScreen.classList.add('active');
+            if (callback) callback();
+        }
+    }
+    
     // Initialize the page
     initPage();
     
@@ -361,12 +377,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Show the main question screen
     function showQuestionScreen() {
-        introScreen.classList.remove('active');
-        questionScreen.classList.add('active');
-        
-        // Reset state
-        resetNoButton();
-        responseText.textContent = "Choose wisely bbg... 😼";
+        smoothTransition(introScreen, questionScreen, () => {
+            // Reset state
+            resetNoButton();
+            responseText.textContent = "Choose wisely bbg... 😼";
+        });
     }
     
     // Handle YES button click
@@ -397,17 +412,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show chat screen after a short delay
         setTimeout(() => {
-            questionScreen.classList.remove('active');
-            yesScreen.classList.add('active');
-            
-            // Start chat story
-            setTimeout(initChatStory, 500);
-            
-            // Auto scroll to show chat
-            setTimeout(() => {
-                document.querySelector('.chat-story-container').scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
+            smoothTransition(questionScreen, yesScreen, () => {
+                // Start chat story
+                setTimeout(initChatStory, 500);
+                
+                // Auto scroll to show chat
+                setTimeout(() => {
+                    document.querySelector('.chat-story-container').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
                 });
             }, 800);
         }, 800);
@@ -992,24 +1005,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Restart the experience
     function restartExperience() {
-        yesScreen.classList.remove('active');
-        introScreen.classList.add('active');
-        // Hide secret hint
-        const secretHint = document.getElementById('secret-hint-container');
-        if (secretHint) {
-            secretHint.classList.remove('show');
-        }
-        // Show chat container again if it was hidden
-        const chatContainer = document.querySelector('.chat-story-container');
-        const ratingOverlay = document.getElementById('rating-overlay');
-        if (chatContainer) {
-            chatContainer.style.display = 'flex';
-            chatContainer.style.opacity = '1';
-            chatContainer.style.transform = 'scale(1)';
-        }
-        if (ratingOverlay) {
-            ratingOverlay.style.display = 'none';
-        }
+        smoothTransition(yesScreen, introScreen, () => {
+            // Hide secret hint
+            const secretHint = document.getElementById('secret-hint-container');
+            if (secretHint) {
+                secretHint.classList.remove('show');
+            }
+            // Show chat container again if it was hidden
+            const chatContainer = document.querySelector('.chat-story-container');
+            const ratingOverlay = document.getElementById('rating-overlay');
+            if (chatContainer) {
+                chatContainer.style.display = 'flex';
+                chatContainer.style.opacity = '1';
+                chatContainer.style.transform = 'scale(1)';
+            }
+            if (ratingOverlay) {
+                ratingOverlay.style.display = 'none';
+            }
         
         // Clear any remaining stickers
         const stickersContainer = document.querySelector('.stickers-container');
@@ -1323,19 +1335,10 @@ Okay, stopping here before this gets awkward. 😂✌️`;
                 this.style.transform = '';
             }, 200);
             
-            // Fade out secret screen
-            secretScreen.style.opacity = '0';
-            secretScreen.style.transform = 'scale(1.05)';
-            
-            setTimeout(() => {
-                secretScreen.classList.remove('active');
-                document.getElementById('intro-screen').classList.add('active');
+            // Use smooth transition to go back
+            smoothTransition(secretScreen, document.getElementById('intro-screen'), () => {
                 isSecretModeActive = false;
-                
-                // Reset styles
-                secretScreen.style.opacity = '';
-                secretScreen.style.transform = '';
-            }, 300);
+            });
         });
         
         // Enhanced shake detection
@@ -1378,32 +1381,17 @@ Okay, stopping here before this gets awkward. 😂✌️`;
             // Create romantic background
             createSecretBackground();
             
-            // Hide current screen with transition
+            // Use smooth transition
             const activeScreen = document.querySelector('.screen.active');
             if (activeScreen) {
-                activeScreen.style.opacity = '0';
-                activeScreen.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    activeScreen.classList.remove('active');
-                    activeScreen.style.opacity = '';
-                    activeScreen.style.transform = '';
-                }, 300);
+                smoothTransition(activeScreen, secretScreen, () => {
+                    // Start typing animation with delay
+                    setTimeout(typeMessage, 800);
+                });
+            } else {
+                secretScreen.classList.add('active');
+                setTimeout(typeMessage, 800);
             }
-            
-            // Show secret screen with effects
-            secretScreen.style.opacity = '0';
-            secretScreen.style.transform = 'scale(0.9)';
-            secretScreen.classList.add('active');
-            
-            // Animate in
-            setTimeout(() => {
-                secretScreen.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                secretScreen.style.opacity = '1';
-                secretScreen.style.transform = 'scale(1)';
-            }, 10);
-            
-            // Start typing animation with delay
-            setTimeout(typeMessage, 800);
         }
         
         // Add shake listener
