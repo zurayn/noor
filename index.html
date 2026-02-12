@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hey Noor 🌹 - From Zurayn</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
     <div class="confetti-container"></div>
     <div class="stickers-container"></div>
 
-    <!-- Updated Secret Mode Screen -->
+    <!-- Secret Mode Screen (FIXED: scrollable layout) -->
     <section id="secret-screen" class="screen">
         <div class="secret-hearts-container"></div>
         <div class="secret-particles-container"></div>
@@ -50,6 +50,7 @@
                 </div>
             </div>
             
+            <!-- Button appears 3s after typing ends -->
             <button id="okay-btn" class="secret-btn">
                 <span class="btn-icon">❤️</span>
                 <span class="btn-text">This was sweet...</span>
@@ -107,12 +108,8 @@
                 <p class="sub-question">(as a friend obviously... or not 👀)</p>
                 
                 <div class="buttons-container">
-                    <button id="yes-btn" class="btn yes-btn">
-                        ✅ YES
-                    </button>
-                    <button id="no-btn" class="btn no-btn">
-                        ❌ NO
-                    </button>
+                    <button id="yes-btn" class="btn yes-btn">✅ YES</button>
+                    <button id="no-btn" class="btn no-btn">❌ NO</button>
                 </div>
                 
                 <div class="dynamic-text">
@@ -125,29 +122,21 @@
             </div>
         </section>
         
-        <!-- YES Response Screen -->
+        <!-- YES Response Screen (Chat) -->
         <section id="yes-screen" class="screen">
-            <!-- Chat Container -->
             <div class="chat-story-container">
-                <!-- Instagram-like Header -->
                 <div class="chat-header">
                     <div class="back-btn" id="back-to-question">←</div>
-                    <img src="stickers/pfp.png" alt="Zurayn's profile picture" class="profile-pic" onerror="this.onerror=null; this.src='https://i.pravatar.cc/150?img=8';">
+                    <img src="stickers/pfp.png" alt="Zurayn's profile" class="profile-pic" onerror="this.onerror=null; this.src='https://i.pravatar.cc/150?img=8';">
                     <div class="profile-info">
                         <h3 class="profile-name">Zurayn</h3>
                         <p class="username">noobharshu</p>
                     </div>
                 </div>
                 
-                <!-- Chat Display Area -->
-                <div class="chat-display" id="chat-display">
-                    <!-- Messages will be dynamically added here -->
-                </div>
-                
-                <!-- Options Area -->
+                <div class="chat-display" id="chat-display"></div>
                 <div class="options-container" id="options-container"></div>
                 
-                <!-- Typing Indicator -->
                 <div class="typing-indicator" id="typing-indicator">
                     <div class="typing-dots">
                         <span></span>
@@ -158,7 +147,7 @@
                 </div>
             </div>
             
-            <!-- Rating System -->
+            <!-- Rating Overlay -->
             <div class="rating-overlay" id="rating-overlay" style="display: none;">
                 <div class="rating-content">
                     <h3 class="friend-zone-title">lmao jk relax 😂</h3>
@@ -177,7 +166,6 @@
                         <p class="rating-note">(5 stars if you fw the vision)</p>
                     </div>
                     
-                    <!-- Secret Hint Section -->
                     <div class="secret-discovery-hint" id="secret-hint-container">
                         <div class="secret-hint-content">
                             <div class="secret-hint-icon">
@@ -190,28 +178,21 @@
                             </div>
                             <div class="secret-hint-text">
                                 <p class="secret-hint-title">Pssst... there's more! 👀</p>
-                                <p class="secret-hint-desc">Try shaking your phone for a secret message from Zurayn...</p>
+                                <p class="secret-hint-desc">Try shaking your phone for a secret message...</p>
                                 <p class="secret-hint-sub">(It's kinda sweet, no cap 😊)</p>
                             </div>
                         </div>
                     </div>
                     
-                    <button id="restart-btn" class="btn">
-                        Wanna do it again? 😼
-                    </button>
+                    <button id="restart-btn" class="btn">Wanna do it again? 😼</button>
                 </div>
             </div>
         </section>
         
-        <!-- Footer with inside jokes -->
         <footer class="footer">
             <p>Made with ❤️ by Zurayn (ur bbg/billu)</p>
             <p class="footer-jokes">
-                <span>#ProudGay</span> • 
-                <span>#WhiteCoatManKiABCD</span> • 
-                <span>#Hecker</span> • 
-                <span>#Hurr</span> • 
-                <span>#Blehh</span>
+                <span>#ProudGay</span> • <span>#WhiteCoatManKiABCD</span> • <span>#Hecker</span> • <span>#Hurr</span> • <span>#Blehh</span>
             </p>
         </footer>
     </main>
