@@ -1253,11 +1253,14 @@ Okay, stopping here before this gets awkward. 😂✌️`;
                     typedText.innerHTML += charHtml;
                     charIndex++;
                     
-                    // Auto-scroll only the message box (not the container!)
-                    typedText.scrollTo({
-                        top: typedText.scrollHeight,
-                        behavior: 'smooth'
-                    });
+                    // Auto-scroll the secret-text container (parent of typed-text)
+                    const secretTextContainer = typedText.parentElement;
+                    if (secretTextContainer) {
+                        secretTextContainer.scrollTo({
+                            top: secretTextContainer.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    }
                     
                     // Dynamic typing speed for natural feel
                     let speed = 30;
@@ -1290,12 +1293,15 @@ Okay, stopping here before this gets awkward. 😂✌️`;
                     // Add completion effect
                     typedText.innerHTML += `<span class="typing-complete"> 💫</span>`;
                     
-                    // Final scroll to show completion (only scroll the text box)
+                    // Final scroll to show completion (scroll the secret-text container)
+                    const secretTextContainer = typedText.parentElement;
                     setTimeout(() => {
-                        typedText.scrollTo({
-                            top: typedText.scrollHeight,
-                            behavior: 'smooth'
-                        });
+                        if (secretTextContainer) {
+                            secretTextContainer.scrollTo({
+                                top: secretTextContainer.scrollHeight,
+                                behavior: 'smooth'
+                            });
+                        }
                     }, 200);
                     
                     // Show button after 3 seconds

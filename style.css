@@ -1193,19 +1193,9 @@ body:has(#secret-screen.active) {
 .corner-bl { bottom: 20px; left: 20px; }
 .corner-br { bottom: 20px; right: 20px; }
 
-/* Message border */
+/* Message border - Hidden */
 .message-border {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    right: 15px;
-    bottom: 15px;
-    border: 2px solid transparent;
-    border-image: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #4facfe);
-    border-image-slice: 1;
-    border-radius: 20px;
-    pointer-events: none;
-    opacity: 0.3;
+    display: none;
 }
 
 /* Message content */
@@ -1252,24 +1242,23 @@ body:has(#secret-screen.active) {
 
 /* Custom scrollbar */
 .secret-text::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 .secret-text::-webkit-scrollbar-track {
-    background: rgba(102, 126, 234, 0.1);
+    background: rgba(102, 126, 234, 0.08);
     border-radius: 10px;
     margin: 10px 0;
 }
 
 .secret-text::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
     border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
 }
 
 .secret-text::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #764ba2, #f093fb);
-    box-shadow: 0 2px 8px rgba(244, 147, 251, 0.5);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7));
 }
 
 /* Typing animation */
@@ -1302,9 +1291,9 @@ body:has(#secret-screen.active) {
 
 .typing-text {
     font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: #667eea;
     font-style: italic;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    font-weight: 500;
 }
 
 .typing-dots {
