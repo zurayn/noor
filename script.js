@@ -6,11 +6,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const noBtn = document.getElementById('no-btn');
     const restartBtn = document.getElementById('restart-btn');
     const responseText = document.getElementById('response-text');
+    const backButton = document.getElementById('back-to-question'); // FIXED: moved here
     
     // Screens
     const introScreen = document.getElementById('intro-screen');
     const questionScreen = document.getElementById('question-screen');
     const yesScreen = document.getElementById('yes-screen');
+    const secretScreen = document.getElementById('secret-screen'); // FIXED: for secret mode
     
     // Containers
     const heartsContainer = document.querySelector('.hearts-container');
@@ -20,23 +22,24 @@ document.addEventListener('DOMContentLoaded', function() {
     let noClickCount = 0;
     let isNoButtonMoving = false;
     let noButtonMoveInterval;
-    // Initialize the page
-    initPage();
-    
-    // Event Listeners
-    startBtn.addEventListener('click', showQuestionScreen);
-    yesBtn.addEventListener('click', handleYesClick);
-    noBtn.addEventListener('click', handleNoClick);
-    restartBtn.addEventListener('click', restartExperience);
+    let lastInteraction = Date.now();
 
     // === CHAT SYSTEM VARIABLES ===
     let chatHistory = [];
     let currentStep = 0;
     let userChoices = [];
-    let originalNoClickCount = 0;
+    let originalNoClickCount = 0;   // FIXED: store NO count
+    let chatTimeouts = [];          // FIXED: store all timers for cleanup
+    
+    // === SECRET MODE VARIABLES ===
+    let isSecretModeActive = false;
+    let secretTypingTimeout = null;
+    let lastShakeTime = 0;
+    let isTypingCancelled = false;  // FIXED: cancel typing on OK click
+    
     // ============================
 
-    const chatStory = {
+    const chatStory = { /* (same as original, unchanged) */
         steps: [
             // Step 0 - Initial message
             {
@@ -328,64 +331,66 @@ document.addEventListener('DOMContentLoaded', function() {
         ]
     };
     
-    // Initialize page with background hearts and intro screen
+    // Initialize page
+    initPage();
+    
+    // Event Listeners
+    startBtn.addEventListener('click', showQuestionScreen);
+    yesBtn.addEventListener('click', handleYesClick);
+    noBtn.addEventListener('click', handleNoClick);
+    restartBtn.addEventListener('click', restartExperience);
+    
+    // FIXED: Attach back button listener only once, and clean up timers
+    if (backButton) {
+        backButton.addEventListener('click', function() {
+            resetChatState();      // Clear timers & messages
+            restartExperience();   // Go back to intro
+        });
+    }
+
+    // ============ INIT FUNCTIONS ============
     function initPage() {
         createBackgroundHearts();
         introScreen.classList.add('active');
     }
     
-    // Create floating background hearts
     function createBackgroundHearts() {
         const heartEmojis = ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💖', '💗', '💓', '💞', '💕'];
-        
         for (let i = 0; i < 20; i++) {
             const heart = document.createElement('div');
             heart.classList.add('heart-bg');
             heart.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
-            
-            // Random position
             heart.style.left = `${Math.random() * 100}%`;
             heart.style.top = `${Math.random() * 100}%`;
-            
-            // Random size
             const size = 15 + Math.random() * 30;
             heart.style.fontSize = `${size}px`;
-            
-            // Random animation delay and duration
             heart.style.animationDelay = `${Math.random() * 5}s`;
             heart.style.animationDuration = `${5 + Math.random() * 10}s`;
-            
             heartsContainer.appendChild(heart);
         }
     }
     
-    // Show the main question screen
+    // ============ SCREEN NAVIGATION ============
     function showQuestionScreen() {
         introScreen.classList.remove('active');
         questionScreen.classList.add('active');
-        
-        // Reset state
         resetNoButton();
         responseText.textContent = "Choose wisely bbg... 😼";
     }
     
-    // Handle YES button click
+    // ============ YES BUTTON ============
     function handleYesClick() {
-        console.log("YES button clicked - Starting chat");
+        // FIXED: Stop NO button movement and clear interval
+        resetNoButton();
         
-        // Store the current noClickCount from main game
-        window.originalNoClickCount = noClickCount;
-        console.log("noClickCount stored:", noClickCount);
+        // FIXED: Store the correct NO count
+        originalNoClickCount = noClickCount;
+        console.log("NO count stored:", originalNoClickCount);
         
-        // Create visual effects
         createHeartBurst();
         createConfetti();
+        if (typeof createStickers === 'function') createStickers();
         
-        // Show stickers
-        if (typeof createStickers === 'function') {
-            createStickers();
-        }
-        // Update response text before transition
         const responses = [
             "Yay! I knew it! 😼❤️",
             "Ayo fr?? You're not lying right? 😂",
@@ -395,34 +400,100 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
         responseText.textContent = responses[Math.floor(Math.random() * responses.length)];
         
-        // Show chat screen after a short delay
         setTimeout(() => {
             questionScreen.classList.remove('active');
             yesScreen.classList.add('active');
-            
-            // Start chat story
             setTimeout(initChatStory, 500);
-            
-            // Auto scroll to show chat
-            setTimeout(() => {
-                document.querySelector('.chat-story-container').scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-            }, 800);
         }, 800);
     }
-
-    // Initialize chat story
-    function initChatStory() {
-        console.log("Initializing chat story...");
+    
+    // ============ NO BUTTON ============
+    function handleNoClick() {
+        noClickCount++;
+        const sadResponses = [
+            "Hatt! Think again 😾",
+            "You can't do this to me 😔",
+            "Hurr! But why?? 😭",
+            "Blehh... that's harsh hazyyy 🥀",
+            "Cyaa... you're breaking my heart 💔",
+            "We r proud gay na? 🤣 Just kidding... but srsly 😾"
+        ];
+        const randomResponse = sadResponses[Math.floor(Math.random() * sadResponses.length)];
+        responseText.textContent = randomResponse;
         
-        // Reset chat state
-        chatHistory = [];
+        if (noClickCount === 1) {
+            noBtn.classList.add('moving');
+            setTimeout(() => {
+                isNoButtonMoving = true;
+                startNoButtonMovement();
+            }, 500);
+        }
+    }
+    
+    function startNoButtonMovement() {
+        const container = document.querySelector('.buttons-container');
+        const containerRect = container.getBoundingClientRect();
+        const buttonRect = noBtn.getBoundingClientRect();
+        
+        noBtn.style.position = 'absolute';
+        
+        noButtonMoveInterval = setInterval(() => {
+            if (!isNoButtonMoving) return;
+            const maxX = containerRect.width - buttonRect.width;
+            const maxY = containerRect.height - buttonRect.height;
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+            noBtn.style.transition = 'all 0.5s ease';
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
+            
+            if (Math.random() > 0.7) {
+                const noTexts = ["❌ NO", "😾 NO", "🥀 NO", "😭 NO", "💔 NO"];
+                noBtn.textContent = noTexts[Math.floor(Math.random() * noTexts.length)];
+            }
+        }, 600);
+    }
+    
+    function resetNoButton() {
+        noClickCount = 0;
+        isNoButtonMoving = false;
+        if (noButtonMoveInterval) {
+            clearInterval(noButtonMoveInterval);
+            noButtonMoveInterval = null;
+        }
+        if (noBtn) {
+            noBtn.classList.remove('moving');
+            noBtn.style.position = '';
+            noBtn.style.left = '';
+            noBtn.style.top = '';
+            noBtn.textContent = '❌ NO';
+            noBtn.style.transition = '';
+        }
+    }
+    
+    // ============ CHAT STORY ============
+    // FIXED: Clear all chat timers and reset state
+    function resetChatState() {
+        chatTimeouts.forEach(clearTimeout);
+        chatTimeouts = [];
         currentStep = 0;
         userChoices = [];
         
-        // Get chat elements
+        const chatDisplay = document.getElementById('chat-display');
+        const optionsContainer = document.getElementById('options-container');
+        if (chatDisplay) chatDisplay.innerHTML = '';
+        if (optionsContainer) optionsContainer.innerHTML = '';
+        
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) typingIndicator.classList.remove('active');
+        const typingBubble = document.getElementById('typing-bubble-indicator');
+        if (typingBubble) typingBubble.remove();
+    }
+    
+    function initChatStory() {
+        console.log("Initializing chat story...");
+        resetChatState(); // FIXED: clean slate
+        
         const chatDisplay = document.getElementById('chat-display');
         const optionsContainer = document.getElementById('options-container');
         const chatContainer = document.querySelector('.chat-story-container');
@@ -430,93 +501,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!chatDisplay || !optionsContainer) {
             console.error("Chat elements not found!");
-            // Fallback to old YES screen
             showRatingOverlay();
             return;
         }
         
-        // Make sure chat container is visible and rating is hidden
         if (chatContainer) {
             chatContainer.style.display = 'flex';
             chatContainer.style.opacity = '1';
             chatContainer.style.transform = 'scale(1)';
         }
-        if (ratingOverlay) {
-            ratingOverlay.style.display = 'none';
-        }
+        if (ratingOverlay) ratingOverlay.style.display = 'none';
         
-        // Clear chat display
-        chatDisplay.innerHTML = '';
-        optionsContainer.innerHTML = '';
-        
-        // Start chat sequence directly with first message
-        setTimeout(() => {
-            processStep(0);
-        }, 1000);
-        
-        // Add back button functionality
-        const backButton = document.getElementById('back-to-question');
-        if (backButton) {
-            backButton.addEventListener('click', function() {
-                // Reset chat state
-                chatHistory = [];
-                currentStep = 0;
-                userChoices = [];
-                
-                // Clear chat display
-                const chatDisplay = document.getElementById('chat-display');
-                if (chatDisplay) {
-                    chatDisplay.innerHTML = '';
-                }
-                
-                // Clear options
-                const optionsContainer = document.getElementById('options-container');
-                if (optionsContainer) {
-                    optionsContainer.innerHTML = '';
-                }
-                
-                // Go back to intro
-                restartExperience();
-            });
-        }
-        
-        console.log("Chat story initialized");
+        // Start chat
+        const timer = setTimeout(() => processStep(0), 1000);
+        chatTimeouts.push(timer);
     }
-
-    // Fallback function if chat fails
-    function showRatingOverlay() {
-        const chatContainer = document.querySelector('.chat-story-container');
-        const ratingOverlay = document.getElementById('rating-overlay');
-        
-        if (chatContainer && ratingOverlay) {
-            chatContainer.style.display = 'none';
-            ratingOverlay.style.display = 'flex';
-        }
-    }
-
-    // Add system message
-    function addSystemMessage(text) {
-        const chatDisplay = document.getElementById('chat-display');
-        if (!chatDisplay) return;
-        
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'message-bubble system-message';
-        messageDiv.innerHTML = `<div class="message-content"><p class="context-text">${text}</p><span class="message-time">now</span></div>`;
-        
-        chatDisplay.appendChild(messageDiv);
-        
-        // Auto scroll
-        setTimeout(() => {
-            chatDisplay.scrollTop = chatDisplay.scrollHeight;
-        }, 100);
-    }
-
-    // Process a chat step
+    
     function processStep(stepId) {
         currentStep = stepId;
         const step = chatStory.steps.find(s => s.id === stepId);
         if (!step) {
-            // End of chat - show rating
             endChatStory();
             return;
         }
@@ -524,103 +528,107 @@ document.addEventListener('DOMContentLoaded', function() {
         switch(step.type) {
             case "zurayn":
                 showTypingIndicator(true);
-                
-                setTimeout(() => {
-                    addMessage("zurayn", step.message, step.typingSpeed);
+                const timer1 = setTimeout(() => {
+                    // FIXED: pass typingSpeed to addMessage
+                    addMessage("zurayn", step.message, step.typingSpeed || 40);
                     showTypingIndicator(false);
                     
-                    // Execute special function if exists
                     if (step.special && typeof step.special === 'function') {
                         step.special();
                     }
                     
-                    // Check if there's a reference to noClickCount
-                    if (originalNoClickCount > 0 && stepId === 2) {
-                        setTimeout(() => {
-                            addNoCountReference();
-                        }, 1000);
+                    // Show NO count reference if appropriate
+                    if (originalNoClickCount > 3 && stepId === 2) {
+                        const timer2 = setTimeout(() => addNoCountReference(), 1000);
+                        chatTimeouts.push(timer2);
                     }
                     
-                    // Continue to next step if specified
                     if (step.nextStep !== undefined) {
-                        setTimeout(() => {
-                            processStep(step.nextStep);
-                        }, step.delay || 500);
+                        const timer3 = setTimeout(() => processStep(step.nextStep), step.delay || 500);
+                        chatTimeouts.push(timer3);
                     } else {
-                        // No next step - end the chat story
-                        setTimeout(() => {
-                            endChatStory();
-                        }, 1500);
+                        const timer4 = setTimeout(() => endChatStory(), 1500);
+                        chatTimeouts.push(timer4);
                     }
                 }, 1000);
+                chatTimeouts.push(timer1);
                 break;
                 
             case "options":
-                setTimeout(() => {
-                    showOptions(step.options);
-                }, 800);
+                const timer5 = setTimeout(() => showOptions(step.options), 800);
+                chatTimeouts.push(timer5);
                 break;
         }
     }
-
-    // Add message to chat
+    
+    // FIXED: Real typing effect with support for <br> and auto-scroll
     function addMessage(sender, text, typingSpeed = 40) {
         const chatDisplay = document.getElementById('chat-display');
+        if (!chatDisplay) return;
         
-        // Create message bubble
         const messageDiv = document.createElement('div');
-        // FIXED: Zurayn = receiver (left), User = sender (right)
         messageDiv.className = `message-bubble ${sender === 'zurayn' ? 'receiver' : 'sender'}`;
         
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
         
-        // Add message text with typing effect
-        contentDiv.innerHTML = `<p>${text}</p>`;
-        
+        const p = document.createElement('p');
+        contentDiv.appendChild(p);
         messageDiv.appendChild(contentDiv);
         chatDisplay.appendChild(messageDiv);
         
-        // Animate message
-        messageDiv.style.animation = 'messageSlideIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+        // Split by <br> to handle line breaks
+        const parts = text.split('<br>');
+        let lineIndex = 0;
+        let charIndex = 0;
+        let currentLine = '';
         
-        // Add to history
-        chatHistory.push({
-            sender: sender,
-            text: text,
-            time: new Date()
-        });
-        
-        // Auto scroll to bottom - SMOOTH SCROLLING
-        setTimeout(() => {
-            chatDisplay.scrollTo({
-                top: chatDisplay.scrollHeight,
-                behavior: 'smooth'
-            });
+        function typeChar() {
+            if (isTypingCancelled) return; // For secret mode only, but safe
             
-            // Add "seen just now" for USER messages only
-            if (sender === 'user') {
-                setTimeout(() => {
-                    const seenText = document.createElement('span');
-                    seenText.className = 'seen-receipt';
-                    seenText.textContent = 'Seen just now';
-                    contentDiv.appendChild(seenText);
+            if (lineIndex < parts.length) {
+                if (charIndex < parts[lineIndex].length) {
+                    // Type character
+                    currentLine += parts[lineIndex][charIndex];
+                    // Use innerHTML to display emojis correctly
+                    p.innerHTML = currentLine + (lineIndex < parts.length - 1 ? '<br>' : '');
+                    charIndex++;
+                    const timer = setTimeout(typeChar, typingSpeed);
+                    chatTimeouts.push(timer);
                     
-                    // Mark as seen with animation
-                    setTimeout(() => {
-                        messageDiv.classList.add('message-seen');
-                        // Auto scroll again after "seen" appears
-                        chatDisplay.scrollTo({
-                            top: chatDisplay.scrollHeight,
-                            behavior: 'smooth'
-                        });
-                    }, 300);
-                }, 1000);
+                    // Auto-scroll during typing
+                    chatDisplay.scrollTo({ top: chatDisplay.scrollHeight, behavior: 'smooth' });
+                } else {
+                    // Move to next line
+                    lineIndex++;
+                    if (lineIndex < parts.length) {
+                        // Insert <br> and reset for next line
+                        currentLine += '<br>';
+                        p.innerHTML = currentLine;
+                        charIndex = 0;
+                        const timer = setTimeout(typeChar, typingSpeed * 2); // pause after line break
+                        chatTimeouts.push(timer);
+                    } else {
+                        // Finished typing all lines
+                        if (sender === 'user') {
+                            setTimeout(() => {
+                                const seen = document.createElement('span');
+                                seen.className = 'seen-receipt';
+                                seen.textContent = 'Seen just now';
+                                contentDiv.appendChild(seen);
+                                messageDiv.classList.add('message-seen');
+                                chatDisplay.scrollTo({ top: chatDisplay.scrollHeight, behavior: 'smooth' });
+                            }, 800);
+                        }
+                    }
+                }
             }
-        }, 100);
+        }
+        
+        // Start typing
+        typeChar();
     }
-
-    // Show options to user
+    
     function showOptions(options) {
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = '';
@@ -631,47 +639,32 @@ document.addEventListener('DOMContentLoaded', function() {
             button.innerHTML = option.text;
             
             button.addEventListener('click', function() {
-                // Animate selection
                 button.classList.add('selected');
+                userChoices.push({ step: currentStep, choice: option.value, text: option.text });
                 
-                // Record choice
-                userChoices.push({
-                    step: currentStep,
-                    choice: option.value,
-                    text: option.text
-                });
+                // Show user's choice with typing effect
+                addMessage("user", option.text, 20);
+                optionsContainer.innerHTML = '';
                 
-                // Show user's choice as message
-                setTimeout(() => {
-                    addMessage("user", option.text, 20);
-                    
-                    // Clear options
-                    optionsContainer.innerHTML = '';
-                    
-                    // Process next step
-                    setTimeout(() => {
-                        processStep(option.nextStep);
-                    }, 800);
-                }, 300);
+                const timer = setTimeout(() => processStep(option.nextStep), 800);
+                chatTimeouts.push(timer);
             });
             
             optionsContainer.appendChild(button);
         });
         
-        // Add subtle animation to options
         optionsContainer.style.opacity = '0';
         setTimeout(() => {
             optionsContainer.style.opacity = '1';
             optionsContainer.style.transform = 'translateY(0)';
         }, 10);
     }
-
-    // Show typing indicator
+    
     function showTypingIndicator(show) {
         const chatDisplay = document.getElementById('chat-display');
+        if (!chatDisplay) return;
         
         if (show) {
-            // Create Instagram-style typing bubble
             const typingBubble = document.createElement('div');
             typingBubble.className = 'message-bubble receiver typing-bubble';
             typingBubble.id = 'typing-bubble-indicator';
@@ -682,94 +675,49 @@ document.addEventListener('DOMContentLoaded', function() {
             
             typingBubble.appendChild(dotsContainer);
             chatDisplay.appendChild(typingBubble);
-            
-            // Auto scroll
-            setTimeout(() => {
-                chatDisplay.scrollTop = chatDisplay.scrollHeight;
-            }, 10);
+            chatDisplay.scrollTo({ top: chatDisplay.scrollHeight, behavior: 'smooth' });
         } else {
-            // Remove typing bubble
             const typingBubble = document.getElementById('typing-bubble-indicator');
-            if (typingBubble) {
-                typingBubble.remove();
-            }
+            if (typingBubble) typingBubble.remove();
         }
     }
-
-    // Add reference to noClickCount if user clicked NO multiple times
+    
+    // FIXED: Add guard and only show if originalNoClickCount > 0
     function addNoCountReference() {
-        if (originalNoClickCount > 3) {
-            const chatDisplay = document.getElementById('chat-display');
-            
-            const referenceDiv = document.createElement('div');
-            referenceDiv.className = 'message-bubble system-message no-count-reference';
-            referenceDiv.innerHTML = `(After ${originalNoClickCount} NOs, finally got that YES! 😂)`;
-            
-            chatDisplay.appendChild(referenceDiv);
-            
-            // Auto scroll
-            setTimeout(() => {
-                chatDisplay.scrollTop = chatDisplay.scrollHeight;
-            }, 100);
-        }
-    }
-
-    // Add sticker message
-    function addStickerMessage(stickerPath) {
         const chatDisplay = document.getElementById('chat-display');
+        if (!chatDisplay || originalNoClickCount === 0) return;
         
-        const stickerDiv = document.createElement('div');
-        stickerDiv.className = 'message-bubble sender sticker-message';
-        
-        const img = document.createElement('img');
-        img.src = stickerPath;
-        img.alt = 'Sticker';
-        img.onerror = function() {
-            this.src = 'https://cdn.jsdelivr.net/npm/twemoji@14.0.2/svg/1f496.svg';
-        };
-        
-        stickerDiv.appendChild(img);
-        chatDisplay.appendChild(stickerDiv);
-        
-        // Auto scroll
-        setTimeout(() => {
-            chatDisplay.scrollTop = chatDisplay.scrollHeight;
-        }, 100);
+        const referenceDiv = document.createElement('div');
+        referenceDiv.className = 'message-bubble system-message no-count-reference';
+        referenceDiv.innerHTML = `(After ${originalNoClickCount} NOs, finally got that YES! 😂)`;
+        chatDisplay.appendChild(referenceDiv);
+        chatDisplay.scrollTo({ top: chatDisplay.scrollHeight, behavior: 'smooth' });
     }
-
-    // End chat story and show rating
+    
     function endChatStory() {
-        // Wait 5 seconds before transitioning
-        setTimeout(() => {
-            // Hide chat interface
+        // Wait 5 seconds then show rating
+        const timer = setTimeout(() => {
             document.querySelector('.chat-story-container').style.opacity = '0';
             document.querySelector('.chat-story-container').style.transform = 'scale(0.95)';
             
-            // Show rating overlay after fade
             setTimeout(() => {
                 document.querySelector('.chat-story-container').style.display = 'none';
                 document.getElementById('rating-overlay').style.display = 'flex';
-                
-                // Add personalized message based on chat choices
                 personalizeRatingMessage();
                 
-                // Show secret hint after a delay
                 setTimeout(() => {
                     const secretHint = document.getElementById('secret-hint-container');
-                    if (secretHint) {
-                        secretHint.classList.add('show');
-                    }
+                    if (secretHint) secretHint.classList.add('show');
                 }, 2000);
             }, 500);
-        }, 5000); // Wait 5 seconds before showing rating
+        }, 5000);
+        chatTimeouts.push(timer);
     }
-
-    // Personalize rating message based on chat choices
+    
     function personalizeRatingMessage() {
         const finalMessage = document.querySelector('.final-message h4');
         const note = document.querySelector('.rating-note');
         
-        // Check user's choices for personalized message
         const youWinChoice = userChoices.find(c => c.value === 'you_win');
         const wcmWinsChoice = userChoices.find(c => c.value === 'wcm_wins');
         const cringe = userChoices.find(c => c.value === 'sometimes');
@@ -791,198 +739,43 @@ document.addEventListener('DOMContentLoaded', function() {
             note.textContent = "(no pressure but 5 stars would be valid)";
         }
     }
-
-    // Get current time for messages
-    function getCurrentTime() {
-        const now = new Date();
-        return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // Auto-scroll to bottom function
-    function setupAutoScroll() {
-        const chatDisplay = document.getElementById('chat-display');
-        if (!chatDisplay) return;
-        
-        const scrollIndicator = document.createElement('div');
-        scrollIndicator.className = 'scroll-indicator';
-        scrollIndicator.innerHTML = '↓';
-        scrollIndicator.title = 'Scroll to latest messages';
-        
-        chatDisplay.parentElement.appendChild(scrollIndicator);
-        
-        // Show indicator when not at bottom
-        chatDisplay.addEventListener('scroll', function() {
-            const isAtBottom = chatDisplay.scrollHeight - chatDisplay.scrollTop <= chatDisplay.clientHeight + 50;
-            
-            if (isAtBottom) {
-                scrollIndicator.classList.remove('show');
-            } else {
-                scrollIndicator.classList.add('show');
-            }
-        });
-        
-        // Scroll to bottom on click
-        scrollIndicator.addEventListener('click', function() {
-            chatDisplay.scrollTo({
-                top: chatDisplay.scrollHeight,
-                behavior: 'smooth'
-            });
-        });
-    }
-
-    // Initialize auto-scroll when page loads
-    setupAutoScroll();
     
-    // Handle NO button click
-    function handleNoClick() {
-        noClickCount++;
-        
-        // Different responses based on click count
-        const sadResponses = [
-            "Hatt! Think again 😾",
-            "You can't do this to me 😔",
-            "Hurr! But why?? 😭",
-            "Blehh... that's harsh hazyyy 🥀",
-            "Cyaa... you're breaking my heart 💔",
-            "We r proud gay na? 🤣 Just kidding... but srsly 😾"
-        ];
-        
-        const randomResponse = sadResponses[Math.floor(Math.random() * sadResponses.length)];
-        responseText.textContent = randomResponse;
-        
-        // Make button move after first click
-        if (noClickCount === 1) {
-            // Add moving class
-            noBtn.classList.add('moving');
-            
-            // Start moving the button after a short delay
-            setTimeout(() => {
-                isNoButtonMoving = true;
-                startNoButtonMovement();
-            }, 500);
-        }
-    }
-    
-    // Start moving the NO button randomly
-    function startNoButtonMovement() {
-        const container = document.querySelector('.buttons-container');
-        const containerRect = container.getBoundingClientRect();
-        const buttonRect = noBtn.getBoundingClientRect();
-        
-        // Set button to position absolute for movement
-        noBtn.style.position = 'absolute';
-        
-        // Move button randomly within container
-        noButtonMoveInterval = setInterval(() => {
-            if (!isNoButtonMoving) return;
-            
-            const maxX = containerRect.width - buttonRect.width;
-            const maxY = containerRect.height - buttonRect.height;
-            
-            // Generate random position within container
-            const randomX = Math.floor(Math.random() * maxX);
-            const randomY = Math.floor(Math.random() * maxY);
-            
-            // Apply new position with smooth transition
-            noBtn.style.transition = 'all 0.5s ease';
-            noBtn.style.left = `${randomX}px`;
-            noBtn.style.top = `${randomY}px`;
-            
-            // Occasionally change button text
-            if (Math.random() > 0.7) {
-                const noTexts = ["❌ NO", "😾 NO", "🥀 NO", "😭 NO", "💔 NO"];
-                noBtn.textContent = noTexts[Math.floor(Math.random() * noTexts.length)];
-            }
-        }, 600); // Move every 600ms
-    }
-    
-    // Reset NO button to initial state
-    function resetNoButton() {
-        noClickCount = 0;
-        isNoButtonMoving = false;
-        
-        // Clear movement interval
-        if (noButtonMoveInterval) {
-            clearInterval(noButtonMoveInterval);
-        }
-        
-        // Reset button styles
-        noBtn.classList.remove('moving');
-        noBtn.style.position = '';
-        noBtn.style.left = '';
-        noBtn.style.top = '';
-        noBtn.textContent = '❌ NO';
-        noBtn.style.transition = '';
-    }
-    
-    // Create heart burst animation
+    // ============ ANIMATIONS & EFFECTS ============
     function createHeartBurst() {
         const heartBurst = document.querySelector('.heart-burst');
         if (!heartBurst) return;
         heartBurst.style.animation = 'none';
-        
-        // Trigger reflow to restart animation
         void heartBurst.offsetWidth;
-        
         heartBurst.style.animation = 'heartbeat 0.5s 3';
     }
     
-    // Create confetti animation
     function createConfetti() {
-        // Show confetti container
         confettiContainer.style.display = 'block';
-        
-        // Create confetti pieces
         const colors = ['#ff6b6b', '#ff8e8e', '#ffb6d9', '#ff85c0', '#ff4757'];
-        
         for (let i = 0; i < 100; i++) {
             const confetti = document.createElement('div');
             confetti.classList.add('confetti');
-            
-            // Random color
             confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            
-            // Random position
             confetti.style.left = `${Math.random() * 100}%`;
-            
-            // Random size
             const size = 5 + Math.random() * 10;
             confetti.style.width = `${size}px`;
             confetti.style.height = `${size}px`;
-            
-            // Random rotation
             confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-            
             confettiContainer.appendChild(confetti);
-            
-            // Animate confetti falling
             animateConfetti(confetti);
         }
-        
-        // Hide confetti after animation
         setTimeout(() => {
             confettiContainer.style.display = 'none';
-            // Remove all confetti elements
-            while (confettiContainer.firstChild) {
-                confettiContainer.removeChild(confettiContainer.firstChild);
-            }
+            while (confettiContainer.firstChild) confettiContainer.firstChild.remove();
         }, 3000);
     }
     
-    // Animate individual confetti piece
     function animateConfetti(confetti) {
-        // Random animation values
         const duration = 2 + Math.random() * 2;
         const delay = Math.random() * 1;
-        
-        // Set initial position (above viewport)
         confetti.style.top = '-20px';
         confetti.style.opacity = '1';
-        
-        // Apply animation
         confetti.style.transition = `all ${duration}s cubic-bezier(0.1, 0.8, 0.3, 1) ${delay}s`;
-        
-        // Trigger animation
         setTimeout(() => {
             confetti.style.top = '100vh';
             confetti.style.opacity = '0';
@@ -990,16 +783,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 10);
     }
     
-    // Restart the experience
+    function createStickers() {
+        const stickersContainer = document.querySelector('.stickers-container');
+        if (!stickersContainer) return;
+        const stickerPaths = ['stickers/sticker1.png', 'stickers/sticker2.png', 'stickers/sticker3.png', 'stickers/sticker4.png'];
+        stickerPaths.forEach((path, index) => {
+            const sticker = document.createElement('div');
+            sticker.classList.add('sticker');
+            const img = document.createElement('img');
+            img.src = path;
+            img.alt = 'Sticker'; // FIXED: added alt
+            sticker.appendChild(img);
+            const isLeft = index % 2 === 0;
+            if (isLeft) {
+                sticker.style.left = '10%';
+                sticker.style.animation = `stickerPopFromLeft 5s ease-out forwards`;
+            } else {
+                sticker.style.right = '10%';
+                sticker.style.animation = `stickerPopFromRight 5s ease-out forwards`;
+            }
+            const baseBottom = 20 + (index * 15);
+            sticker.style.bottom = `${baseBottom}%`;
+            sticker.style.animationDelay = `${index * 0.2}s`;
+            stickersContainer.appendChild(sticker);
+            setTimeout(() => { if (sticker.parentNode) sticker.remove(); }, 5000 + (index * 200));
+        });
+    }
+    
     function restartExperience() {
         yesScreen.classList.remove('active');
         introScreen.classList.add('active');
-        // Hide secret hint
+        
         const secretHint = document.getElementById('secret-hint-container');
-        if (secretHint) {
-            secretHint.classList.remove('show');
-        }
-        // Show chat container again if it was hidden
+        if (secretHint) secretHint.classList.remove('show');
+        
         const chatContainer = document.querySelector('.chat-story-container');
         const ratingOverlay = document.getElementById('rating-overlay');
         if (chatContainer) {
@@ -1007,24 +824,20 @@ document.addEventListener('DOMContentLoaded', function() {
             chatContainer.style.opacity = '1';
             chatContainer.style.transform = 'scale(1)';
         }
-        if (ratingOverlay) {
-            ratingOverlay.style.display = 'none';
-        }
+        if (ratingOverlay) ratingOverlay.style.display = 'none';
         
-        // Clear any remaining stickers
         const stickersContainer = document.querySelector('.stickers-container');
-        if (stickersContainer) {
-            stickersContainer.innerHTML = '';
-        }
-        // Scroll to top
+        if (stickersContainer) stickersContainer.innerHTML = '';
+        
+        resetChatState(); // FIXED: clear chat timers and messages
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
-    // Add interactive rating stars
+    // ============ RATING STARS ============
     const stars = document.querySelectorAll('.star');
     stars.forEach((star, index) => {
         star.addEventListener('click', () => {
-            // Fill all stars up to the clicked one
             stars.forEach((s, i) => {
                 if (i <= index) {
                     s.style.color = 'gold';
@@ -1034,8 +847,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     s.style.textShadow = '';
                 }
             });
-            
-            // Show funny message based on rating
             const messages = [
                 "Only {count}? Hatt! 😡",
                 "{count} stars? Blehh... 😾",
@@ -1043,24 +854,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 "{count} stars? I'll take it! 😼",
                 "All {count}! Yeshh! My bbg energy! ✌️"
             ];
-            
             const selectedMessage = messages[index];
             const ratingNote = document.querySelector('.rating-note');
-            
-            // Update the message after a delay
             setTimeout(() => {
                 const originalText = ratingNote.textContent;
                 ratingNote.textContent = selectedMessage.replace('{count}', index + 1);
-                
-                // Revert after 3 seconds
-                setTimeout(() => {
-                    ratingNote.textContent = originalText;
-                }, 3000);
+                setTimeout(() => { ratingNote.textContent = originalText; }, 3000);
             }, 500);
         });
     });
     
-    // Add some random text changes for dynamic feel
+    // ============ AUTO-SCROLL INDICATOR (SINGLETON) ============
+    function setupAutoScroll() {
+        const chatDisplay = document.getElementById('chat-display');
+        if (!chatDisplay) return;
+        // FIXED: prevent duplicate indicator
+        if (chatDisplay.parentElement.querySelector('.scroll-indicator')) return;
+        
+        const scrollIndicator = document.createElement('div');
+        scrollIndicator.className = 'scroll-indicator';
+        scrollIndicator.innerHTML = '↓';
+        scrollIndicator.title = 'Scroll to latest messages';
+        chatDisplay.parentElement.appendChild(scrollIndicator);
+        
+        chatDisplay.addEventListener('scroll', function() {
+            const isAtBottom = chatDisplay.scrollHeight - chatDisplay.scrollTop <= chatDisplay.clientHeight + 50;
+            if (isAtBottom) scrollIndicator.classList.remove('show');
+            else scrollIndicator.classList.add('show');
+        });
+        
+        scrollIndicator.addEventListener('click', function() {
+            chatDisplay.scrollTo({ top: chatDisplay.scrollHeight, behavior: 'smooth' });
+        });
+    }
+    setupAutoScroll(); // Called once
+    
+    // ============ RANDOM TEASER ROTATION ============
     setInterval(() => {
         if (questionScreen.classList.contains('active')) {
             const teasers = [
@@ -1070,86 +899,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 "No pressure hazyyy... 🎀",
                 "Just choose... it's not that deep 😂"
             ];
-            
-            // Only change if user hasn't interacted recently
             if (Date.now() - lastInteraction > 5000) {
                 const randomTeaser = teasers[Math.floor(Math.random() * teasers.length)];
                 const teaserEl = document.querySelector('.tease-text');
-                if (teaserEl) {
-                    teaserEl.textContent = randomTeaser;
-                }
+                if (teaserEl) teaserEl.textContent = randomTeaser;
             }
         }
     }, 8000);
     
-    let lastInteraction = Date.now();
+    document.addEventListener('click', () => { lastInteraction = Date.now(); });
     
-    // Update last interaction time on any click
-    document.addEventListener('click', () => {
-        lastInteraction = Date.now();
-    });
-
-    // Create sticker pop-up animation
-    function createStickers() {
-        const stickersContainer = document.querySelector('.stickers-container');
-        if (!stickersContainer) return;
-        
-        const stickerPaths = [
-            'stickers/sticker1.png',
-            'stickers/sticker2.png',
-            'stickers/sticker3.png',
-            'stickers/sticker4.png'
-        ];
-        
-        stickerPaths.forEach((path, index) => {
-            const sticker = document.createElement('div');
-            sticker.classList.add('sticker');
-            
-            const img = document.createElement('img');
-            img.src = path;
-            img.alt = `Sticker ${index + 1}`;
-            
-            sticker.appendChild(img);
-            
-            // Alternate sides: left (even index) or right (odd index)
-            const isLeft = index % 2 === 0;
-            
-            if (isLeft) {
-                sticker.style.left = '10%';
-                sticker.style.animation = `stickerPopFromLeft 5s ease-out forwards`;
-            } else {
-                sticker.style.right = '10%';
-                sticker.style.animation = `stickerPopFromRight 5s ease-out forwards`;
-            }
-            
-            // Vertical position with slight randomness
-            const baseBottom = 20 + (index * 15);
-            sticker.style.bottom = `${baseBottom}%`;
-            
-            // Stagger the animation start times
-            sticker.style.animationDelay = `${index * 0.2}s`;
-            
-            stickersContainer.appendChild(sticker);
-            
-            // Remove sticker after animation completes
-            setTimeout(() => {
-                if (sticker && sticker.parentNode) {
-                    sticker.remove();
-                }
-            }, 5000 + (index * 200));
-        });
-    }
-
-    // ============ ENHANCED SECRET MODE ============
-    const secretScreen = document.getElementById('secret-screen');
-    const okayBtn = document.getElementById('okay-btn');
+    // ============ SECRET MODE (ENHANCED & FIXED) ============
     const typedText = document.getElementById('typed-text');
+    const okayBtn = document.getElementById('okay-btn');
     
     if (secretScreen && okayBtn && typedText) {
-        let isSecretModeActive = false;
-        let typingTimeout = null;
-        let lastShakeTime = 0;
-        
         const secretMessage = `I joke a lot, but genuinely talking to you feels easy, hazyyy.
 Our chats are never planned, never serious on purpose, but somehow they fit into my day naturally.
 You're the first notification I see and the last one before the day ends, and yeah, that quietly makes a difference.
@@ -1158,40 +922,29 @@ This site, the jokes, the chaos... it's just a small, coded way of saying you ma
 
 Okay, stopping here before this gets awkward. 😂✌️`;
 
-        // Create romantic background effects
         function createSecretBackground() {
             const heartsContainer = document.querySelector('.secret-hearts-container');
             const particlesContainer = document.querySelector('.secret-particles-container');
-            
             if (!heartsContainer || !particlesContainer) return;
             
-            // Clear existing
             heartsContainer.innerHTML = '';
             particlesContainer.innerHTML = '';
             
-            // Create floating hearts
             const heartEmojis = ['❤️', '💖', '💗', '💓', '💞', '💕', '💌', '🌹', '🌸', '💐'];
-            
             for (let i = 0; i < 15; i++) {
                 const heart = document.createElement('div');
                 heart.classList.add('secret-heart');
                 heart.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
-                
-                // Random position and size
                 heart.style.left = `${Math.random() * 100}%`;
                 heart.style.fontSize = `${15 + Math.random() * 20}px`;
                 heart.style.animationDelay = `${Math.random() * 5}s`;
                 heart.style.animationDuration = `${10 + Math.random() * 15}s`;
-                
                 heartsContainer.appendChild(heart);
             }
             
-            // Create floating particles
             for (let i = 0; i < 50; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('secret-particle');
-                
-                // Random properties
                 const size = 1 + Math.random() * 4;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
@@ -1200,185 +953,118 @@ Okay, stopping here before this gets awkward. 😂✌️`;
                 particle.style.animationDelay = `${Math.random() * 3}s`;
                 particle.style.animationDuration = `${10 + Math.random() * 20}s`;
                 particle.style.setProperty('--random-x', `${Math.random() * 100 - 50}px`);
-                
                 particlesContainer.appendChild(particle);
             }
         }
-        
-        // Type message with enhanced animation
+
         function typeMessage() {
-            if (typingTimeout) {
-                clearTimeout(typingTimeout);
-            }
-            
+            if (secretTypingTimeout) clearTimeout(secretTypingTimeout);
+            isTypingCancelled = false; // FIXED: reset cancel flag
             typedText.innerHTML = '';
             let charIndex = 0;
             let lineIndex = 0;
             
-            // Show typing indicator
             const typingIndicator = document.querySelector('.typing-indicator');
-            if (typingIndicator) {
-                typingIndicator.style.display = 'flex';
-            }
+            if (typingIndicator) typingIndicator.style.display = 'flex';
             
             function typeNextChar() {
+                if (isTypingCancelled) return; // FIXED: stop typing if cancelled
+                
                 if (charIndex < secretMessage.length) {
                     const currentChar = secretMessage[charIndex];
-                    
-                    // Handle special formatting
                     if (currentChar === '\n') {
                         typedText.innerHTML += '<br>';
                         lineIndex++;
-                        
-                        // Add slight delay after line breaks
                         charIndex++;
-                        typingTimeout = setTimeout(typeNextChar, 100);
-                        return;
+                        secretTypingTimeout = setTimeout(typeNextChar, 100);
+                    } else {
+                        const emojiRegex = /[\u{1F300}-\u{1F9FF}]/u;
+                        if (emojiRegex.test(currentChar)) {
+                            typedText.innerHTML += `<span class="secret-emoji">${currentChar}</span>`;
+                        } else if (currentChar === '❤️') {
+                            typedText.innerHTML += `<span class="secret-heart-char" style="color:#ff6b8b">${currentChar}</span>`;
+                        } else {
+                            typedText.innerHTML += currentChar;
+                        }
+                        charIndex++;
+                        
+                        // FIXED: scroll the correct container
+                        const secretTextDiv = document.querySelector('.secret-text');
+                        if (secretTextDiv) {
+                            secretTextDiv.scrollTo({ top: secretTextDiv.scrollHeight, behavior: 'smooth' });
+                        }
+                        
+                        let speed = 30;
+                        if (/[.,;!?\n]/.test(currentChar)) speed = 70;
+                        else if (currentChar === ' ') speed = 20;
+                        else speed = 40 + Math.random() * 20;
+                        
+                        secretTypingTimeout = setTimeout(typeNextChar, speed);
                     }
-                    
-                    // Add character with possible styling
-                    let charHtml = currentChar;
-                    
-                    // Style emojis differently
-                    const emojiRegex = /[\u{1F300}-\u{1F9FF}]/u;
-                    if (emojiRegex.test(currentChar)) {
-                        charHtml = `<span class="secret-emoji">${currentChar}</span>`;
-                    }
-                    
-                    // Style hearts specially
-                    if (currentChar === '❤️') {
-                        charHtml = `<span class="secret-heart-char" style="color:#ff6b8b">${currentChar}</span>`;
-                    }
-                    
-                    typedText.innerHTML += charHtml;
-                    charIndex++;
-                    
-                    // Auto-scroll only the message box (not the container!)
-                    typedText.scrollTo({
-                        top: typedText.scrollHeight,
-                        behavior: 'smooth'
-                    });
-                    
-                    // Dynamic typing speed for natural feel
-                    let speed = 30;
-                    
-                    // Slower for punctuation and line breaks
-                    if (/[.,;!?\n]/.test(currentChar)) {
-                        speed = 70;
-                    }
-                    // Faster for spaces
-                    else if (currentChar === ' ') {
-                        speed = 20;
-                    }
-                    // Medium for regular characters
-                    else {
-                        speed = 40 + Math.random() * 20;
-                    }
-                    
-                    typingTimeout = setTimeout(typeNextChar, speed);
                 } else {
-                    // Typing complete - hide typing indicator
                     if (typingIndicator) {
                         setTimeout(() => {
                             typingIndicator.style.opacity = '0';
-                            setTimeout(() => {
-                                typingIndicator.style.display = 'none';
-                            }, 300);
+                            setTimeout(() => { typingIndicator.style.display = 'none'; }, 300);
                         }, 500);
                     }
-                    
-                    // Add completion effect
                     typedText.innerHTML += `<span class="typing-complete"> 💫</span>`;
-                    
-                    // Final scroll to show completion (only scroll the text box)
                     setTimeout(() => {
-                        typedText.scrollTo({
-                            top: typedText.scrollHeight,
-                            behavior: 'smooth'
-                        });
+                        const secretTextDiv = document.querySelector('.secret-text');
+                        if (secretTextDiv) secretTextDiv.scrollTo({ top: secretTextDiv.scrollHeight, behavior: 'smooth' });
                     }, 200);
                     
-                    // Show button after 3 seconds
                     setTimeout(() => {
                         const okayBtn = document.getElementById('okay-btn');
-                        if (okayBtn) {
-                            okayBtn.classList.add('show');
-                        }
+                        if (okayBtn) okayBtn.classList.add('show');
                     }, 3000);
                 }
             }
-            
             typeNextChar();
         }
-        
-        // OK button event
+
         okayBtn.addEventListener('click', function() {
-            if (typingTimeout) {
-                clearTimeout(typingTimeout);
-            }
+            // FIXED: cancel typing and clear timeout
+            isTypingCancelled = true;
+            if (secretTypingTimeout) clearTimeout(secretTypingTimeout);
             
-            // Add button click effect
             this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = '';
-            }, 200);
+            setTimeout(() => { this.style.transform = ''; }, 200);
             
-            // Fade out secret screen
             secretScreen.style.opacity = '0';
             secretScreen.style.transform = 'scale(1.05)';
             
             setTimeout(() => {
                 secretScreen.classList.remove('active');
-                document.getElementById('intro-screen').classList.add('active');
+                introScreen.classList.add('active');
                 isSecretModeActive = false;
-                
-                // Reset styles
                 secretScreen.style.opacity = '';
                 secretScreen.style.transform = '';
             }, 300);
         });
-        
-        // Enhanced shake detection
+
         function handleShake(event) {
             if (isSecretModeActive) return;
-            
             const acceleration = event.accelerationIncludingGravity;
             if (!acceleration) return;
-            
-            // Calculate movement intensity
-            const movement = Math.abs(acceleration.x || 0) + 
-                           Math.abs(acceleration.y || 0) + 
-                           Math.abs(acceleration.z || 0);
-            
+            const movement = Math.abs(acceleration.x || 0) + Math.abs(acceleration.y || 0) + Math.abs(acceleration.z || 0);
             const now = Date.now();
-            
-            // More sensitive shake detection
             if (movement > 20 && (now - lastShakeTime) > 2500) {
                 lastShakeTime = now;
-                
-                // Add shake confirmation effect
                 document.body.style.transform = 'translateX(5px)';
                 setTimeout(() => {
                     document.body.style.transform = 'translateX(-5px)';
-                    setTimeout(() => {
-                        document.body.style.transform = '';
-                    }, 50);
+                    setTimeout(() => { document.body.style.transform = ''; }, 50);
                 }, 50);
-                
                 setTimeout(activateSecretMode, 200);
             }
         }
-        
-        // Enhanced activate secret mode
+
         function activateSecretMode() {
             if (isSecretModeActive) return;
-            
             isSecretModeActive = true;
-            
-            // Create romantic background
             createSecretBackground();
             
-            // Hide current screen with transition
             const activeScreen = document.querySelector('.screen.active');
             if (activeScreen) {
                 activeScreen.style.opacity = '0';
@@ -1390,27 +1076,23 @@ Okay, stopping here before this gets awkward. 😂✌️`;
                 }, 300);
             }
             
-            // Show secret screen with effects
             secretScreen.style.opacity = '0';
             secretScreen.style.transform = 'scale(0.9)';
             secretScreen.classList.add('active');
             
-            // Animate in
             setTimeout(() => {
                 secretScreen.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
                 secretScreen.style.opacity = '1';
                 secretScreen.style.transform = 'scale(1)';
             }, 10);
             
-            // Start typing animation with delay
             setTimeout(typeMessage, 800);
         }
-        
-        // Add shake listener
+
+        // FIXED: iOS permission request – remove listener after first click
         if (window.DeviceMotionEvent) {
-            // Request permission for iOS 13+
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                document.addEventListener('click', function requestPermissionOnce() {
+                function requestPermissionOnce() {
                     DeviceMotionEvent.requestPermission()
                         .then(permissionState => {
                             if (permissionState === 'granted') {
@@ -1418,20 +1100,18 @@ Okay, stopping here before this gets awkward. 😂✌️`;
                             }
                         })
                         .catch(console.error);
-                    
                     document.removeEventListener('click', requestPermissionOnce);
-                });
+                }
+                document.addEventListener('click', requestPermissionOnce);
             } else {
                 window.addEventListener('devicemotion', handleShake);
             }
         }
-        
-        // Desktop testing - press 'S' key
+
+        // Desktop fallback: 'S' key
         document.addEventListener('keydown', function(e) {
             if ((e.key === 's' || e.key === 'S') && !isSecretModeActive) {
                 e.preventDefault();
-                
-                // Add keypress feedback
                 const keyHint = document.querySelector('.desktop-hint');
                 if (keyHint) {
                     keyHint.style.color = '#ff6b8b';
@@ -1441,80 +1121,45 @@ Okay, stopping here before this gets awkward. 😂✌️`;
                         keyHint.style.transform = '';
                     }, 300);
                 }
-                
                 activateSecretMode();
             }
         });
-        
-        // Add CSS for emoji styling
+
+        // Add emoji styling (same as original)
         const style = document.createElement('style');
         style.textContent = `
-            .secret-emoji {
-                display: inline-block;
-                animation: gentleFloat 2s ease-in-out infinite;
-                margin: 0 2px;
-            }
-            
-            .secret-heart-char {
-                display: inline-block;
-                animation: gentleHeartbeat 1.5s infinite;
-                margin: 0 2px;
-            }
-            
-            .typing-complete {
-                opacity: 0;
-                animation: fadeIn 0.5s ease 0.3s forwards;
-            }
-            
-            @keyframes fadeIn {
-                to { opacity: 1; }
-            }
+            .secret-emoji { display: inline-block; animation: gentleFloat 2s ease-in-out infinite; margin: 0 2px; }
+            .secret-heart-char { display: inline-block; animation: gentleHeartbeat 1.5s infinite; margin: 0 2px; }
+            .typing-complete { opacity: 0; animation: fadeIn 0.5s ease 0.3s forwards; }
+            @keyframes fadeIn { to { opacity: 1; } }
         `;
         document.head.appendChild(style);
     }
 
-    // Secret hint functionality
+    // ============ SECRET HINT (DEVICE DETECTION) ============
     const secretHintContainer = document.getElementById('secret-hint-container');
-
-    // Function to detect if device is mobile
     function isMobileDevice() {
-        return (('ontouchstart' in window) ||
-               (navigator.maxTouchPoints > 0) ||
-               (navigator.msMaxTouchPoints > 0));
+        return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
     }
-
-    // Update hint based on device
+    
     if (secretHintContainer) {
-        // Wait for YES screen to be shown, then update hint
         yesScreen.addEventListener('animationstart', function() {
-            // Small delay to ensure content is loaded
             setTimeout(() => {
                 if (isMobileDevice()) {
-                    // Mobile device - show shake hint
                     const hintText = secretHintContainer.querySelector('.secret-hint-desc');
-                    if (hintText) {
-                        hintText.innerHTML = "Try shaking your phone for a secret message from Zurayn...";
-                    }
+                    if (hintText) hintText.innerHTML = "Try shaking your phone for a secret message from Zurayn...";
                 } else {
-                    // Desktop - show keyboard hint
                     const hintText = secretHintContainer.querySelector('.secret-hint-desc');
                     const hintSub = secretHintContainer.querySelector('.secret-hint-sub');
-                    if (hintText) {
-                        hintText.innerHTML = "Press the <strong>'S' key</strong> for a secret message from Zurayn...";
-                    }
-                    if (hintSub) {
-                        hintSub.innerHTML = "(Or just pretend to shake your laptop 😂)";
-                    }
+                    if (hintText) hintText.innerHTML = "Press the <strong>'S' key</strong> for a secret message from Zurayn...";
+                    if (hintSub) hintSub.innerHTML = "(Or just pretend to shake your laptop 😂)";
                 }
-
                 if (!isMobileDevice()) {
                     const desktopHint = document.createElement('div');
                     desktopHint.className = 'desktop-hint';
                     desktopHint.innerHTML = `<div style="margin-top: 10px; font-size: 0.85rem; color: #888;"><i class="fas fa-keyboard"></i> Desktop tip: Press 'S' key anytime</div>`;
                     const hintTextEl = secretHintContainer.querySelector('.secret-hint-text');
-                    if (hintTextEl) {
-                        hintTextEl.appendChild(desktopHint);
-                    }
+                    if (hintTextEl) hintTextEl.appendChild(desktopHint);
                 }
             }, 1000);
         });
