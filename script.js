@@ -54,12 +54,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 type: "options",
                 options: [
                     {
-                        text: "yeah lol why not",
+                        text: "Yeah why not lol",
                         nextStep: 2,
                         value: "positive"
                     },
                     {
-                        text: "nah you're dreaming 😂",
+                        text: "Nah i'm trolling 😂",
                         nextStep: 3,
                         value: "negative"
                     }
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 2,
                 type: "zurayn",
-                message: "wait fr? 👀",
+                message: "okay fr?? 👀",
                 delay: 400,
                 typingSpeed: 35,
                 nextStep: 4
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 3,
                 type: "zurayn",
-                message: "bruh<br>after all those convos? 😭",
+                message: "HATT<br>you really js played me like that 😔",
                 delay: 500,
                 typingSpeed: 40,
                 nextStep: 5
@@ -112,12 +112,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 type: "options",
                 options: [
                     {
-                        text: "lmao i'm just messing with you",
+                        text: "lmao jk",
                         nextStep: 8,
                         value: "kidding"
                     },
                     {
-                        text: "sorry but it's a no",
+                        text: "yeah sorry it's a no",
                         nextStep: 9,
                         value: "final_no"
                     }
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 7,
                 type: "zurayn",
-                message: "\"maybe\" isn't an answer hazyyy 😒<br>do you like talking to me at least?",
+                message: "\"maybe\" isn't an answer bro 😭<br>you at least like talking to me right?",
                 delay: 500,
                 typingSpeed: 45,
                 nextStep: 13
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 8,
                 type: "zurayn",
-                message: "HATT don't scare me like that 💀<br>so you do like me then?",
+                message: "noob don't do that 😭<br>so you DO like me then? 👉👈",
                 delay: 500,
                 typingSpeed: 40,
                 nextStep: 14
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 9,
                 type: "zurayn",
-                message: "damn okay<br>respect for being honest i guess 🥀<br><br>but you gotta admit this site is kinda cool tho",
+                message: "daymm alright<br>i respect the honesty ig 🥀<br><br>at least admit the site's good tho",
                 delay: 600,
                 typingSpeed: 50
                 // Ends here
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         value: "what"
                     },
                     {
-                        text: "go ahead",
+                        text: "tea",
                         nextStep: 11,
                         value: "go_ahead"
                     }
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 11,
                 type: "zurayn",
-                message: "me or white coat man? 👀",
+                message: "Me or White Coat Man? 👀",
                 delay: 300,
                 typingSpeed: 35,
                 nextStep: 12
@@ -198,17 +198,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 type: "options",
                 options: [
                     {
-                        text: "you obvs",
+                        text: "you 🐣❤️",
                         nextStep: 15,
                         value: "you_win"
                     },
                     {
-                        text: "white coat man lol",
+                        text: "White Coat Man 🫢🥼",
                         nextStep: 16,
                         value: "wcm_wins"
                     },
                     {
-                        text: "why are you asking me this 😭",
+                        text: "why would you ask that 😭",
                         nextStep: 17,
                         value: "confused"
                     }
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 15,
                 type: "zurayn",
-                message: "YESSS 😭<br>proud gay moment fr 🤣",
+                message: "YESHHH 😭<br>#BailcharaOnTop moment fr",
                 delay: 300,
                 typingSpeed: 35,
                 special: function() {
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 16,
                 type: "zurayn",
-                message: "knew it 💀<br>he always wins huh<br><br>jk jk i'm not even pressed",
+                message: "i KNEW it 😔<br>he really got me beat huh 😾<br><br>nah jk idc fr",
                 delay: 500,
                 typingSpeed: 40
                 // Ends here
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 17,
                 type: "zurayn",
-                message: "idk bro i panicked 😭<br>forget i asked lmao",
+                message: "idk i panicked 😭<br>forget i said anything lmao",
                 delay: 400,
                 typingSpeed: 40
                 // Ends here
@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 18,
                 type: "zurayn",
-                message: "ayee<br>that's what i like to hear",
+                message: "yoo...<br>that's what i like to hear",
                 delay: 300,
                 typingSpeed: 35
                 // Ends here
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 19,
                 type: "zurayn",
-                message: "CRINGE??? 💀<br>blehh you're mean<br><br>but fair i guess 😂",
+                message: "CRINGE??? 🥀<br>blehh you're mean<br><br>but fair ig 😂",
                 delay: 400,
                 typingSpeed: 40
                 // Ends here
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 20,
                 type: "zurayn",
-                message: "obvvv we're just friends lol<br>proud gay and all that 🤣",
+                message: "yeah obv js friends lol<br>#ProudGay 🏳️‍🌈",
                 delay: 300,
                 typingSpeed: 40
                 // Ends here
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 id: 21,
                 type: "zurayn",
-                message: "\"sure\" 💀<br>most enthusiastic response ever<br><br>i'll take it tho ✌️",
+                message: "\"sure\" 💀<br>most unenthusiastic answer ever<br><br>i'll take it as a compliment",
                 delay: 400,
                 typingSpeed: 40
                 // Ends here
@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Reset state
         resetNoButton();
-        responseText.textContent = "Choose wisely bbg... 😼";
+        responseText.textContent = "Js pick one noob ";
     }
     
     // Handle YES button click
@@ -388,9 +388,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update response text before transition
         const responses = [
             "Yay! I knew it! 😼❤️",
-            "Ayo fr?? You're not lying right? 😂",
-            "Even White Coat Man approves! (maybe) 😾",
-            "bbg energy confirmed! ✌️",
+            "wait fr?? 😭",
+            "White Coat Man in shambles rn 😂",
+            "yo... let's go ✌️",
             "Hatt! For real? 😭❤️"
         ];
         responseText.textContent = responses[Math.floor(Math.random() * responses.length)];
