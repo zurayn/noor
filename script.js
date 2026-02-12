@@ -1386,8 +1386,6 @@ Okay, stopping here before this gets awkward. 😂✌️`;
             
             isSecretModeActive = true;
             
-            // Play gentle activation sound
-            playSecretModeSound();
             
             // Create romantic background
             createSecretBackground();
@@ -1460,65 +1458,6 @@ Okay, stopping here before this gets awkward. 😂✌️`;
             }
         });
         
-        // Sound effect for secret mode activation
-        function playSecretModeSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Create a gentle chime sound
-                const oscillator1 = audioContext.createOscillator();
-                const oscillator2 = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                // Connect nodes
-                oscillator1.connect(gainNode);
-                oscillator2.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                // Set frequencies for a pleasant chord (C and E notes)
-                oscillator1.frequency.value = 523.25; // C5
-                oscillator2.frequency.value = 659.25; // E5
-                
-                // Set waveform for a soft sound
-                oscillator1.type = 'sine';
-                oscillator2.type = 'sine';
-                
-                // Volume envelope - start quiet, peak, then fade
-                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.05);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-                
-                // Play the sound
-                oscillator1.start(audioContext.currentTime);
-                oscillator2.start(audioContext.currentTime);
-                
-                // Stop after fade out
-                oscillator1.stop(audioContext.currentTime + 0.8);
-                oscillator2.stop(audioContext.currentTime + 0.8);
-                
-                // Add sparkle effect (higher pitched quick notes)
-                setTimeout(() => {
-                    const sparkle = audioContext.createOscillator();
-                    const sparkleGain = audioContext.createGain();
-                    
-                    sparkle.connect(sparkleGain);
-                    sparkleGain.connect(audioContext.destination);
-                    
-                    sparkle.frequency.value = 1046.50; // C6 (higher octave)
-                    sparkle.type = 'sine';
-                    
-                    sparkleGain.gain.setValueAtTime(0.1, audioContext.currentTime);
-                    sparkleGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                    
-                    sparkle.start(audioContext.currentTime);
-                    sparkle.stop(audioContext.currentTime + 0.3);
-                }, 200);
-                
-            } catch (error) {
-                console.log('Audio not available:', error);
-                // Silently fail if audio not supported
-            }
-        }
         
         // Add CSS for emoji styling
         const style = document.createElement('style');
