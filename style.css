@@ -1160,6 +1160,11 @@ body:has(#secret-screen.active) {
     flex-direction: column;
 }
 
+/* Remove the top colored line */
+.secret-message-box::before {
+    display: none;
+}
+
 @keyframes messageBoxAppear {
     0% {
         opacity: 0;
